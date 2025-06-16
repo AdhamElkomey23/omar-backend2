@@ -330,12 +330,12 @@ export default function Sales() {
   const salesWithProducts = sales;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">{t('sales')}</h1>
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('sales')}</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-1">
+            <Button className="flex items-center gap-1 w-full md:w-auto">
               <Plus className="h-4 w-4" />
               {t('recordSale')}
             </Button>
@@ -462,14 +462,14 @@ export default function Sales() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">إجمالي الإيرادات</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+            <div className="text-xl md:text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
           </CardContent>
         </Card>
         <Card>
@@ -478,7 +478,7 @@ export default function Sales() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{sales.length}</div>
+            <div className="text-xl md:text-2xl font-bold">{sales.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -486,7 +486,7 @@ export default function Sales() {
             <CardTitle className="text-sm font-medium">الوحدات المباعة</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalQuantity}</div>
+            <div className="text-xl md:text-2xl font-bold">{totalQuantity}</div>
           </CardContent>
         </Card>
       </div>
@@ -498,7 +498,7 @@ export default function Sales() {
           <CardDescription>ترشيح المبيعات حسب المنتج</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="product-filter">{t('product')}</Label>
               <Select value={productFilter} onValueChange={setProductFilter}>

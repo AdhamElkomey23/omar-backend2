@@ -63,8 +63,8 @@ export default function Dashboard() {
     );
   }
 
-  // Placeholder for actual data
-  const data = dashboardData || {
+  // Placeholder for actual data - ensuring type safety
+  const data: any = dashboardData || {
     totalIncome: 169100,
     totalExpenses: 120000,
     profit: 49100,
@@ -85,12 +85,12 @@ export default function Dashboard() {
   };
 
   // Prepare data for charts
-  const productSalesData = data.topSellingProducts.map(product => ({
+  const productSalesData = data.topSellingProducts.map((product: any) => ({
     name: product.productName,
     value: product.totalRevenue
   }));
 
-  const expensesData = data.topExpenses.map(expense => ({
+  const expensesData = data.topExpenses.map((expense: any) => ({
     name: expense.expenseName,
     value: expense.amount
   }));
@@ -174,7 +174,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-xl md:text-2xl font-bold">{data.topSellingProducts.length}</div>
             <p className="text-xs text-muted-foreground">
-              {data.topSellingProducts.reduce((sum, product) => sum + product.totalSold, 0)} {t("unitsSold")}
+              {data.topSellingProducts.reduce((sum: any, product: any) => sum + product.totalSold, 0)} {t("unitsSold")}
             </p>
           </CardContent>
         </Card>
@@ -233,7 +233,7 @@ export default function Dashboard() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {productSalesData.map((entry, index) => (
+                  {productSalesData.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -285,7 +285,7 @@ export default function Dashboard() {
         <CardContent>
           <div className="space-y-8">
             {data.recentTransactions.length > 0 ? (
-              data.recentTransactions.slice(0, 5).map((transaction) => (
+              data.recentTransactions.slice(0, 5).map((transaction: any) => (
                 <div key={transaction.id} className="flex items-center">
                   <div className={`mr-4 rounded-full p-2 ${transaction.type === 'sale' ? 'bg-green-100' : 'bg-red-100'}`}>
                     {transaction.type === 'sale' ? 
