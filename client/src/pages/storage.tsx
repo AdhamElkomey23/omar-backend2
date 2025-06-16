@@ -137,13 +137,13 @@ export default function Storage() {
   }
 
   return (
-    <div className="space-y-6" dir={isRTL() ? 'rtl' : 'ltr'}>
+    <div className="space-y-4 md:space-y-6" dir={isRTL() ? 'rtl' : 'ltr'}>
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('storageManagement')}</h1>
+      <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{t('storageManagement')}</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="w-full md:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               {t('addNewItem')}
             </Button>
@@ -283,7 +283,7 @@ export default function Storage() {
           <CardTitle>ملخص مخزون المواد</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
             {['الجبس', 'الفلسبار', 'الكاولينا', 'التلك', 'كاربونات الكالسيوم'].map((material) => {
               const totalQuantity = storageItems
                 .filter(item => item.itemName === material)
@@ -317,37 +317,59 @@ export default function Storage() {
                 <CardTitle className="text-lg">{materialName}</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>شركة المورد</TableHead>
-                      <TableHead>جهة الاتصال</TableHead>
-                      <TableHead>تاريخ الشراء</TableHead>
-                      <TableHead>الكمية (طن)</TableHead>
-                      <TableHead>السعر للطن</TableHead>
-                      <TableHead>التكلفة الإجمالية</TableHead>
-                      <TableHead>الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[120px]">شركة المورد</TableHead>
+                        <TableHead className="min-w-[120px] hidden md:table-cell">جهة الاتصال</TableHead>
+                        <TableHead className="min-w-[100px] hidden sm:table-cell">تاريخ الشراء</TableHead>
+                        <TableHead className="min-w-[100px]">الكمية (طن)</TableHead>
+                        <TableHead className="min-w-[100px] hidden lg:table-cell">السعر للطن</TableHead>
+                        <TableHead className="min-w-[120px]">التكلفة الإجمالية</TableHead>
+                        <TableHead className="min-w-[100px]">الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
                   <TableBody>
                     {materialItems.map((item) => (
                       <TableRow key={item.id}>
-                        <TableCell className="font-medium text-blue-600">{item.dealerName}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="font-medium text-blue-600">
+                          <div>
+                            <div>{item.dealerName}</div>
+                            <div className="text-xs text-muted-foreground md:hidden">
+                              {item.dealerContact || '-'}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground hidden md:table-cell">
                           {item.dealerContact || '-'}
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="text-sm hidden sm:table-cell">
                           {new Date(item.purchaseDate).toLocaleDateString('ar-EG')}
                         </TableCell>
-                        <TableCell>{item.quantityInTons.toLocaleString()}</TableCell>
-                        <TableCell>{formatCurrency(item.purchasePricePerTon)}</TableCell>
-                        <TableCell>{formatCurrency(item.quantityInTons * item.purchasePricePerTon)}</TableCell>
                         <TableCell>
-                    <div className="flex space-x-2">
+                          <div>
+                            <div>{item.quantityInTons.toLocaleString()}</div>
+                            <div className="text-xs text-muted-foreground sm:hidden">
+                              {new Date(item.purchaseDate).toLocaleDateString('ar-EG')}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">{formatCurrency(item.purchasePricePerTon)}</TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-semibold">{formatCurrency(item.quantityInTons * item.purchasePricePerTon)}</div>
+                            <div className="text-xs text-muted-foreground lg:hidden">
+                              {formatCurrency(item.purchasePricePerTon)}/طن
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                    <div className="flex space-x-1 md:space-x-2">
                       <Dialog open={editingItem?.id === item.id} onOpenChange={(open) => !open && setEditingItem(null)}>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>
-                            <Edit className="h-4 w-4" />
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(item)} className="p-2">
+                            <Edit className="h-3 w-3 md:h-4 md:w-4" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -491,7 +513,8 @@ export default function Storage() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
+                </div>
+              </CardContent>
             </Card>
           );
         })}

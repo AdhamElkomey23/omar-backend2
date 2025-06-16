@@ -564,7 +564,7 @@ export default function Sales() {
               </div>
               
               {sales.map((sale) => (
-                <div key={sale.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                <div key={sale.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors space-y-3 md:space-y-0">
                   <div className="space-y-1 flex-1">
                     <p className="font-medium">{sale.productName}</p>
                     <p className="text-sm text-muted-foreground">
@@ -574,13 +574,13 @@ export default function Sales() {
                       العميل: {sale.clientName}
                     </p>
                   </div>
-                  <div className="text-right mr-4">
+                  <div className="text-left md:text-right md:mr-4">
                     <p className="font-bold text-green-600">${sale.totalAmount.toFixed(2)}</p>
                     <p className="text-sm text-muted-foreground">
                       ${(sale.totalAmount / sale.quantity).toFixed(2)} للوحدة
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 justify-start md:justify-end">
                     <Button
                       variant="outline"
                       size="sm"
