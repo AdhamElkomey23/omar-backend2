@@ -108,28 +108,28 @@ export default function Dashboard() {
   const profitIncreased = true; // This would come from the API in a real app
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">{t("dashboard")}</h1>
-        <Tabs value={dateFilter} onValueChange={setDateFilter} className="w-[400px]">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("dashboard")}</h1>
+        <Tabs value={dateFilter} onValueChange={setDateFilter} className="w-full md:w-[400px]">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="7days">{t("days7")}</TabsTrigger>
-            <TabsTrigger value="30days">{t("days30")}</TabsTrigger>
-            <TabsTrigger value="90days">{t("days90")}</TabsTrigger>
-            <TabsTrigger value="year">{t("year")}</TabsTrigger>
+            <TabsTrigger value="7days" className="text-xs md:text-sm">{t("days7")}</TabsTrigger>
+            <TabsTrigger value="30days" className="text-xs md:text-sm">{t("days30")}</TabsTrigger>
+            <TabsTrigger value="90days" className="text-xs md:text-sm">{t("days90")}</TabsTrigger>
+            <TabsTrigger value="year" className="text-xs md:text-sm">{t("year")}</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
       {/* Summary cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t("totalRevenue")}</CardTitle>
             <LuDollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(data.totalIncome)}</div>
+            <div className="text-xl md:text-2xl font-bold">{formatCurrency(data.totalIncome)}</div>
             <p className="text-xs text-muted-foreground">
               +20.1% {t("fromLastMonth")}
             </p>
@@ -141,7 +141,7 @@ export default function Dashboard() {
             <LuShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(data.totalExpenses)}</div>
+            <div className="text-xl md:text-2xl font-bold">{formatCurrency(data.totalExpenses)}</div>
             <p className="text-xs text-muted-foreground">
               +5.2% {t("fromLastMonth")}
             </p>
@@ -153,7 +153,7 @@ export default function Dashboard() {
             <LuTrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(data.profit)}</div>
+            <div className="text-xl md:text-2xl font-bold">{formatCurrency(data.profit)}</div>
             <div className="flex items-center pt-1">
               {profitIncreased ? (
                 <LuArrowUp className="mr-1 h-3 w-3 text-green-500" />
@@ -172,7 +172,7 @@ export default function Dashboard() {
             <LuBox className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.topSellingProducts.length}</div>
+            <div className="text-xl md:text-2xl font-bold">{data.topSellingProducts.length}</div>
             <p className="text-xs text-muted-foreground">
               {data.topSellingProducts.reduce((sum, product) => sum + product.totalSold, 0)} {t("unitsSold")}
             </p>
@@ -181,13 +181,13 @@ export default function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+        <Card className="lg:col-span-4">
           <CardHeader>
             <CardTitle>{t("salesOverview")}</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <ResponsiveContainer width="100%" height={350}>
+            <ResponsiveContainer width="100%" height={300}>
               <LineChart
                 data={salesTrend}
                 margin={{
