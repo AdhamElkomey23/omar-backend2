@@ -48,7 +48,7 @@ export default function Home() {
                   {t('dashboard')}
                 </Button>
               </Link>
-              <Link href="/products">
+              <Link href="/storage">
                 <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-green-800">
                   <Package className="h-5 w-5 mr-2" />
                   {t('products')}
@@ -140,7 +140,7 @@ export default function Home() {
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
                   {t('manageYourProducts')}
                 </p>
-                <Link href="/products">
+                <Link href="/storage">
                   <Button className="w-full">
                     {t('viewProducts')}
                     <ArrowRight className="h-4 w-4 ml-2" />
