@@ -19,7 +19,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Plus, Edit, Trash2, DollarSign, Filter } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { insertSalaryDeductionSchema } from "@shared/schema";
 import type { Worker, SalaryDeduction } from "@shared/schema";
 
@@ -83,10 +82,13 @@ export default function SalaryDeductions() {
         ...data,
         deductionDate: format(data.deductionDate, 'yyyy-MM-dd'),
       };
-      return apiRequest('/api/salary-deductions', {
+      const response = await fetch('/api/salary-deductions', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formattedData),
       });
+      if (!response.ok) throw new Error('Failed to add salary deduction');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/salary-deductions'] });
@@ -114,10 +116,13 @@ export default function SalaryDeductions() {
         ...data,
         deductionDate: format(data.deductionDate, 'yyyy-MM-dd'),
       };
-      return apiRequest(`/api/salary-deductions/${editingDeduction.id}`, {
+      const response = await fetch(`/api/salary-deductions/${editingDeduction.id}`, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formattedData),
       });
+      if (!response.ok) throw new Error('Failed to update salary deduction');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/salary-deductions'] });
@@ -141,9 +146,11 @@ export default function SalaryDeductions() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/salary-deductions/${id}`, {
+      const response = await fetch(`/api/salary-deductions/${id}`, {
         method: 'DELETE',
       });
+      if (!response.ok) throw new Error('Failed to delete salary deduction');
+      return true;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/salary-deductions'] });
