@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SalaryDeductions from "@/components/salary-deductions";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -341,6 +342,7 @@ export default function Workers() {
         <TabsList>
           <TabsTrigger value="attendance">Daily Attendance</TabsTrigger>
           <TabsTrigger value="workers">Workers List</TabsTrigger>
+          <TabsTrigger value="deductions">Salary Deductions</TabsTrigger>
           <TabsTrigger value="summary">Monthly Summary</TabsTrigger>
         </TabsList>
 
@@ -589,6 +591,10 @@ export default function Workers() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="deductions" className="space-y-6">
+          <SalaryDeductions />
         </TabsContent>
       </Tabs>
 

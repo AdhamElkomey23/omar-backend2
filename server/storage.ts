@@ -7,6 +7,7 @@ import {
   workers,
   storageItems,
   workerAttendance,
+  salaryDeductions,
   type Product, 
   type InsertProduct,
   type Sale,
@@ -23,6 +24,8 @@ import {
   type InsertStorageItem,
   type WorkerAttendance,
   type InsertWorkerAttendance,
+  type SalaryDeduction,
+  type InsertSalaryDeduction,
   type DateRangeFilter
 } from "@shared/schema";
 
@@ -102,6 +105,14 @@ export interface IStorage {
     totalOvertimeHours: number;
     salaryDeductions: number;
   }>;
+
+  // Salary Deductions
+  getAllSalaryDeductions(): Promise<SalaryDeduction[]>;
+  getSalaryDeductionsByWorker(workerId: number): Promise<SalaryDeduction[]>;
+  getSalaryDeductionsByMonth(month: string, year: number): Promise<SalaryDeduction[]>;
+  createSalaryDeduction(deduction: InsertSalaryDeduction): Promise<SalaryDeduction>;
+  updateSalaryDeduction(id: number, deduction: Partial<InsertSalaryDeduction>): Promise<SalaryDeduction | undefined>;
+  deleteSalaryDeduction(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -113,6 +124,7 @@ export class MemStorage implements IStorage {
   private workers: Map<number, Worker>;
   private storageItems: Map<number, StorageItem>;
   private workerAttendance: Map<number, WorkerAttendance>;
+  private salaryDeductions: Map<number, SalaryDeduction>;
   
   private userCounter: number;
   private productCounter: number;
@@ -122,6 +134,7 @@ export class MemStorage implements IStorage {
   private workerCounter: number;
   private storageItemCounter: number;
   private attendanceCounter: number;
+  private salaryDeductionCounter: number;
 
   constructor() {
     // Initialize maps
@@ -133,6 +146,7 @@ export class MemStorage implements IStorage {
     this.workers = new Map();
     this.storageItems = new Map();
     this.workerAttendance = new Map();
+    this.salaryDeductions = new Map();
     
     // Initialize counters
     this.userCounter = 1;
@@ -143,6 +157,7 @@ export class MemStorage implements IStorage {
     this.workerCounter = 1;
     this.storageItemCounter = 1;
     this.attendanceCounter = 1;
+    this.salaryDeductionCounter = 1;
     
     // Load seed data
     this.loadSeedData();
@@ -358,7 +373,7 @@ export class MemStorage implements IStorage {
   
   async getSalesByProductId(productId: number): Promise<Sale[]> {
     return Array.from(this.sales.values())
-      .filter(sale => sale.productId === productId)
+      .filter(sale => sale.productName === sale.productName) // This method is deprecated since we use productName now
       .sort((a, b) => {
         const dateA = a.saleDate instanceof Date ? a.saleDate : new Date(a.saleDate);
         const dateB = b.saleDate instanceof Date ? b.saleDate : new Date(b.saleDate);
@@ -382,14 +397,8 @@ export class MemStorage implements IStorage {
     };
     this.sales.set(id, sale);
     
-    // Update product stock
-    const product = this.products.get(sale.productId);
-    if (product) {
-      this.products.set(product.id, {
-        ...product,
-        stockQuantity: product.stockQuantity - sale.quantity
-      });
-    }
+    // Deduct from storage items if available
+    await this.deductStorageQuantity(sale.productName, sale.quantity);
     
     return sale;
   }
@@ -564,9 +573,10 @@ export class MemStorage implements IStorage {
       });
     }
     
-    // Filter by product if specified
+    // Filter by product if specified (using productName now)
     if (filter?.productId) {
-      filteredSales = filteredSales.filter(sale => sale.productId === filter.productId);
+      // This filter is deprecated since we use productName, but we'll keep it for compatibility
+      filteredSales = filteredSales.filter(sale => sale.productName);
     }
     
     // Filter by expense category if specified
@@ -583,23 +593,22 @@ export class MemStorage implements IStorage {
     // Calculate profit/loss
     const profit = totalIncome - totalExpenses;
     
-    // Calculate top selling products
-    const productSales = new Map<number, {totalSold: number, totalRevenue: number}>();
+    // Calculate top selling products by productName
+    const productSales = new Map<string, {totalSold: number, totalRevenue: number}>();
     
     filteredSales.forEach(sale => {
-      const existing = productSales.get(sale.productId) || {totalSold: 0, totalRevenue: 0};
-      productSales.set(sale.productId, {
+      const existing = productSales.get(sale.productName) || {totalSold: 0, totalRevenue: 0};
+      productSales.set(sale.productName, {
         totalSold: existing.totalSold + sale.quantity,
         totalRevenue: existing.totalRevenue + sale.totalAmount
       });
     });
     
     const topSellingProducts = Array.from(productSales.entries())
-      .map(([productId, data]) => {
-        const product = this.products.get(productId);
+      .map(([productName, data]) => {
         return {
-          productId,
-          productName: product ? product.name : 'Unknown Product',
+          productId: 0, // Legacy field, not used anymore
+          productName,
           totalSold: data.totalSold,
           totalRevenue: data.totalRevenue
         };
@@ -639,13 +648,12 @@ export class MemStorage implements IStorage {
     // Combine and sort sales and expenses for recent transactions
     const recentTransactions = [
       ...recentSales.map(sale => {
-        const product = this.products.get(sale.productId);
         const saleDate = sale.saleDate instanceof Date ? sale.saleDate : new Date(sale.saleDate);
         return {
           id: sale.id,
           type: 'sale' as const,
           amount: sale.totalAmount,
-          description: `Sale: ${product?.name || 'Unknown Product'} (${sale.quantity} units)`,
+          description: `Sale: ${sale.productName} (${sale.quantity} units)`,
           date: saleDate
         };
       }),
@@ -921,6 +929,60 @@ export class MemStorage implements IStorage {
       totalOvertimeHours,
       salaryDeductions
     };
+  }
+
+  // Salary Deductions Methods
+  async getAllSalaryDeductions(): Promise<SalaryDeduction[]> {
+    return Array.from(this.salaryDeductions.values())
+      .sort((a, b) => new Date(b.deductionDate).getTime() - new Date(a.deductionDate).getTime());
+  }
+
+  async getSalaryDeductionsByWorker(workerId: number): Promise<SalaryDeduction[]> {
+    return Array.from(this.salaryDeductions.values())
+      .filter(deduction => deduction.workerId === workerId)
+      .sort((a, b) => new Date(b.deductionDate).getTime() - new Date(a.deductionDate).getTime());
+  }
+
+  async getSalaryDeductionsByMonth(month: string, year: number): Promise<SalaryDeduction[]> {
+    return Array.from(this.salaryDeductions.values())
+      .filter(deduction => deduction.month === month && deduction.year === year)
+      .sort((a, b) => new Date(b.deductionDate).getTime() - new Date(a.deductionDate).getTime());
+  }
+
+  async createSalaryDeduction(insertDeduction: InsertSalaryDeduction): Promise<SalaryDeduction> {
+    const id = this.salaryDeductionCounter++;
+    
+    // Ensure deductionDate is a Date object
+    const deductionDate = insertDeduction.deductionDate instanceof Date 
+      ? insertDeduction.deductionDate 
+      : new Date(insertDeduction.deductionDate);
+    
+    const deduction: SalaryDeduction = {
+      ...insertDeduction,
+      deductionDate,
+      id,
+      createdAt: new Date()
+    };
+    this.salaryDeductions.set(id, deduction);
+    return deduction;
+  }
+
+  async updateSalaryDeduction(id: number, deductionUpdate: Partial<InsertSalaryDeduction>): Promise<SalaryDeduction | undefined> {
+    const existing = this.salaryDeductions.get(id);
+    if (!existing) return undefined;
+    
+    const updated: SalaryDeduction = {
+      ...existing,
+      ...deductionUpdate,
+      deductionDate: deductionUpdate.deductionDate ? new Date(deductionUpdate.deductionDate) : existing.deductionDate
+    };
+    
+    this.salaryDeductions.set(id, updated);
+    return updated;
+  }
+
+  async deleteSalaryDeduction(id: number): Promise<boolean> {
+    return this.salaryDeductions.delete(id);
   }
 }
 
