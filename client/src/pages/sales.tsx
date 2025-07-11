@@ -124,7 +124,7 @@ export default function Sales() {
   const deleteSaleMutation = useMutation({
     mutationFn: async (sale: Sale) => {
       // First add quantity back to storage
-      await fetch('/api/storage/add', {
+      const addResponse = await fetch('/api/storage/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -132,13 +132,16 @@ export default function Sales() {
           quantity: sale.quantity
         }),
       });
+      if (!addResponse.ok) {
+        throw new Error('Failed to restore quantity to storage');
+      }
 
       // Then delete the sale record
       const response = await fetch(`/api/sales/${sale.id}`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete sale');
-      return response.json();
+      return true; // DELETE returns no content, so just return success
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sales'] });
