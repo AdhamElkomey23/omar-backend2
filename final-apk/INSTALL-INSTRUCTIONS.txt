@@ -1,0 +1,34 @@
+🏭 Al-Wasiloon Fertilizer Factory Management APK
+===============================================
+
+📱 Installation Instructions:
+
+1. Transfer the APK file to your Android phone
+2. Enable "Unknown Sources" in your phone's security settings:
+   - Go to Settings > Security > Unknown Sources (Enable)
+   - Or Settings > Apps > Special Access > Install Unknown Apps
+3. Tap the APK file to install
+4. Follow the installation prompts
+
+📋 App Features:
+• Sales Management & Tracking
+• Expense Management
+• Worker Management & Payroll
+• Storage & Inventory Management
+• Dashboard & Analytics
+• Reports Generation
+• Attendance Management
+• Multi-language Support (Arabic/English)
+
+⚠️  Important Notes:
+• This app requires internet connection for full functionality
+• Ensure your device allows installation from unknown sources
+• The app may require storage permissions for data management
+
+🔧 Technical Details:
+• Package: com.alwasiloon.fertilizer
+• Version: 1.0
+• Minimum Android: 5.0+
+• File Size: ~2MB
+
+✅ Ready to install on Android devices!
