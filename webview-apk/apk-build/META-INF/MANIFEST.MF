@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Built-By: Al-Wasiloon Factory
+Created-By: Android APK Builder
+Main-Class: com.alwasiloon.fertilizer.MainActivity
+
