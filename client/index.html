@@ -1,57 +1,23 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Al-Wasiloon">
-    <meta name="application-name" content="Al-Wasiloon">
-    <meta name="theme-color" content="#8B5A3C">
-    <meta name="msapplication-TileColor" content="#8B5A3C">
-    
-    <title>Al-Wasiloon Mining and Chemical Industries</title>
-    <meta name="description" content="نظام إدارة مصنع الواصلون للصناعات التعدينية والكيميائية - إدارة شاملة للمبيعات والمصروفات والعمال والمخزن" />
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Artisana - Handcrafted Products Marketplace</title>
+    <meta name="description" content="Discover unique handmade products created by talented artisans in your community. Shop for ceramics, textiles, woodwork, jewelry, and more with customization options." />
     <!-- Open Graph Tags -->
-    <meta property="og:title" content="Al-Wasiloon Mining and Chemical Industries" />
-    <meta property="og:description" content="نظام إدارة مصنع الواصلون للصناعات التعدينية والكيميائية" />
+    <meta property="og:title" content="Artisana - Handcrafted Products Marketplace" />
+    <meta property="og:description" content="Discover unique handmade products from local artisans. Customizable, ethically sourced, and made with love." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/icon-512.png" />
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
-    
-    <!-- Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    
-    <!-- Fonts -->
+    <meta property="og:image" content="https://pixabay.com/get/g07d8d65a863488ad1814b6e221cbd13df944fcef45df256593a661acfba385b7e4912d5c659ea57d8c0e66b721e582f53751e6d6dfdae6d5d77e8f40f8e66f12_1280.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Nunito+Sans:wght@300;400;600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- PWA Service Worker Registration -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered: ', registration);
-            })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
-      }
-    </script>
-    
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>

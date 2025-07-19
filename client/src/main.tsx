@@ -1,6 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { AlWasiloonApp } from "./AlWasiloonApp";
+import App from "./App";
 import "./index.css";
-import "./AlWasiloon.css";
 
-createRoot(document.getElementById("root")!).render(<AlWasiloonApp />);
+createRoot(document.getElementById("root")!).render(<App />);
