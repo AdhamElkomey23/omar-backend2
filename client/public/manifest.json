@@ -1,0 +1,43 @@
+{
+  "name": "الواصلون للأسمدة - إدارة المصنع",
+  "short_name": "الواصلون",
+  "description": "نظام إدارة مصنع الواصلون للأسمدة الشامل",
+  "start_url": "https://workspace.cofegix734.repl.co",
+  "display": "standalone",
+  "background_color": "#16a34a",
+  "theme_color": "#16a34a",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "المبيعات",
+      "short_name": "المبيعات",
+      "description": "إدارة المبيعات",
+      "url": "https://workspace.cofegix734.repl.co/#/sales",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "المخزون",
+      "short_name": "المخزون",
+      "description": "إدارة المخزون",
+      "url": "https://workspace.cofegix734.repl.co/#/storage",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

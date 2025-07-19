@@ -147,6 +147,15 @@ For local development, ensure the DATABASE_URL environment variable is set corre
 
 ## Recent Changes
 
+### July 19, 2025 - Al-Wasiloon Factory Management System Migration
+- Completely replaced previous Artisana marketplace with Al-Wasiloon Factory Management System
+- Converted from HTML/JS to React-based PWA for mobile deployment
+- Implemented Arabic RTL support with English translation capability
+- Added PWA manifest and service worker for standalone mobile app functionality
+- Features: Sales, Expenses, Workers, Storage management with localStorage persistence
+- App can now be installed on mobile devices and works independently from browser
+- Migration from Replit Agent to standard Replit environment completed successfully
+
 ### July 17, 2025 - Migration and Mobile Deployment
 - Successfully migrated project from Replit Agent to standard Replit environment
 - Resolved dependency and build issues for clean deployment
