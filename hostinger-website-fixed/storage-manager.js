@@ -41,12 +41,22 @@ class LocalStorageManager {
             this.setData('sales', [
                 {
                     id: 1,
-                    productName: "Ammonium Nitrate",
+                    productName: "نترات الأمونيوم",
                     quantity: 500,
                     unitPrice: 180,
                     totalPrice: 90000,
-                    customerName: "Green Fields Co.",
+                    customerName: "شركة الحقول الخضراء",
                     date: "2024-01-10",
+                    status: "completed"
+                },
+                {
+                    id: 2,
+                    productName: "سوبر فوسفات",
+                    quantity: 300,
+                    unitPrice: 200,
+                    totalPrice: 60000,
+                    customerName: "مؤسسة الزراعة المتقدمة",
+                    date: "2024-01-15",
                     status: "completed"
                 }
             ]);
@@ -56,10 +66,51 @@ class LocalStorageManager {
             this.setData('expenses', [
                 {
                     id: 1,
-                    name: "Electricity Bill",
+                    name: "فاتورة الكهرباء",
                     amount: 15000,
                     category: "utilities",
                     date: "2024-01-01"
+                },
+                {
+                    id: 2,
+                    name: "صيانة المعدات",
+                    amount: 8000,
+                    category: "maintenance",
+                    date: "2024-01-05"
+                },
+                {
+                    id: 3,
+                    name: "رواتب الموظفين",
+                    amount: 45000,
+                    category: "salaries",
+                    date: "2024-01-01"
+                }
+            ]);
+        }
+        
+        if (!this.getData('workers').length) {
+            this.setData('workers', [
+                {
+                    id: 1,
+                    name: "أدهم وائل",
+                    position: "مدير",
+                    salary: 25000,
+                    phone: "01234567890",
+                    email: "adham@alwasiloon.com",
+                    address: "القاهرة، مصر",
+                    hireDate: "2023-01-01",
+                    salaryDeductions: []
+                },
+                {
+                    id: 2,
+                    name: "محمد أحمد",
+                    position: "مشغل آلات",
+                    salary: 18000,
+                    phone: "01987654321",
+                    email: "mohamed@alwasiloon.com",
+                    address: "الجيزة، مصر",
+                    hireDate: "2023-02-15",
+                    salaryDeductions: []
                 }
             ]);
         }
@@ -201,6 +252,43 @@ window.fetch = function(url, options = {}) {
         }
     }
     
+    // Worker salary deductions API
+    if (url.startsWith('/api/workers/') && url.includes('/salary-deductions')) {
+        const parts = url.split('/');
+        const workerId = parts[3];
+        
+        if (method === 'POST') {
+            const body = JSON.parse(options.body);
+            const workers = window.localStorageManager.getData('workers');
+            const workerIndex = workers.findIndex(w => w.id == workerId);
+            
+            if (workerIndex !== -1) {
+                if (!workers[workerIndex].salaryDeductions) {
+                    workers[workerIndex].salaryDeductions = [];
+                }
+                const newDeduction = { ...body, id: Date.now() };
+                workers[workerIndex].salaryDeductions.push(newDeduction);
+                window.localStorageManager.setData('workers', workers);
+                
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve(newDeduction)
+                });
+            }
+        }
+        
+        if (method === 'GET') {
+            const workers = window.localStorageManager.getData('workers');
+            const worker = workers.find(w => w.id == workerId);
+            const deductions = worker ? (worker.salaryDeductions || []) : [];
+            
+            return Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve(deductions)
+            });
+        }
+    }
+    
     if (url.startsWith('/api/workers/')) {
         const id = url.split('/').pop();
         if (method === 'PUT') {
@@ -289,10 +377,58 @@ window.fetch = function(url, options = {}) {
     
     // Attendance API
     if (url.startsWith('/api/attendance')) {
+        if (url.includes('/date')) {
+            const data = window.localStorageManager.getData('attendance');
+            return Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve(data)
+            });
+        }
+        
+        if (method === 'POST') {
+            const body = JSON.parse(options.body);
+            const newItem = window.localStorageManager.addItem('attendance', body);
+            return Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve(newItem)
+            });
+        }
+        
         const data = window.localStorageManager.getData('attendance');
         return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(data)
+        });
+    }
+    
+    // Reports API
+    if (url === '/api/reports/monthly-summary') {
+        const sales = window.localStorageManager.getData('sales');
+        const expenses = window.localStorageManager.getData('expenses');
+        
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        
+        const monthlySales = sales.filter(sale => {
+            const saleDate = new Date(sale.date);
+            return saleDate.getMonth() === currentMonth && saleDate.getFullYear() === currentYear;
+        });
+        
+        const monthlyExpenses = expenses.filter(expense => {
+            const expenseDate = new Date(expense.date);
+            return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+        });
+        
+        const summary = {
+            totalSales: monthlySales.reduce((sum, sale) => sum + (sale.totalPrice || 0), 0),
+            totalExpenses: monthlyExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0),
+            salesCount: monthlySales.length,
+            expensesCount: monthlyExpenses.length
+        };
+        
+        return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(summary)
         });
     }
     
