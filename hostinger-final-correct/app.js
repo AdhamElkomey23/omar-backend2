@@ -20,16 +20,22 @@ const MATERIALS = [
     { id: 'calcium', name: 'كاربونات الكالسيوم', unit: 'طن' }
 ];
 
-// Initialize app
+// Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing app...');
     initializeApp();
+    console.log('App initialized with data:', appData);
+});
+
+// Also initialize when page loads completely
+window.addEventListener('load', function() {
+    console.log('Page fully loaded, updating displays...');
+    updateAllDisplays();
 });
 
 function initializeApp() {
-    // Initialize sample data if none exists
-    if (appData.sales.length === 0) {
-        initializeSampleData();
-    }
+    // Always initialize sample data to ensure it's loaded
+    initializeSampleData();
     
     // Show default page
     showPage('dashboard');
@@ -37,8 +43,10 @@ function initializeApp() {
     // Update displays
     updateAllDisplays();
     
-    // Initialize charts
-    initializeCharts();
+    // Initialize charts with delay to ensure DOM is ready
+    setTimeout(() => {
+        initializeCharts();
+    }, 100);
 }
 
 function initializeSampleData() {
@@ -260,11 +268,18 @@ function updateDashboard() {
     const netProfit = totalSales - totalExpenses;
     const totalWorkers = appData.workers.filter(w => w.status === 'active').length;
     
-    // Update dashboard stats
-    document.getElementById('totalSales').textContent = formatCurrency(totalSales);
-    document.getElementById('totalExpenses').textContent = formatCurrency(totalExpenses);
-    document.getElementById('netProfit').textContent = formatCurrency(netProfit);
-    document.getElementById('totalWorkers').textContent = totalWorkers;
+    // Update dashboard stats with null checks
+    const totalSalesEl = document.getElementById('totalSales');
+    const totalExpensesEl = document.getElementById('totalExpenses');
+    const netProfitEl = document.getElementById('netProfit');
+    const totalWorkersEl = document.getElementById('totalWorkers');
+    
+    if (totalSalesEl) totalSalesEl.textContent = formatCurrency(totalSales);
+    if (totalExpensesEl) totalExpensesEl.textContent = formatCurrency(totalExpenses);
+    if (netProfitEl) netProfitEl.textContent = formatCurrency(netProfit);
+    if (totalWorkersEl) totalWorkersEl.textContent = totalWorkers;
+    
+    console.log('Dashboard updated:', { totalSales, totalExpenses, netProfit, totalWorkers });
 }
 
 function updateSalesPage() {

@@ -445,7 +445,6 @@
     
     <!-- Modals and overlay content will go here -->
     
-    <script src="app.js"></script>
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
@@ -460,11 +459,15 @@
                 hour: '2-digit',
                 minute: '2-digit'
             });
-            document.getElementById('currentTime').textContent = timeString;
+            const timeEl = document.getElementById('currentTime');
+            if (timeEl) {
+                timeEl.textContent = timeString;
+            }
         }
         
         updateTime();
         setInterval(updateTime, 60000); // Update every minute
     </script>
+    <script src="app.js"></script>
 </body>
 </html>
