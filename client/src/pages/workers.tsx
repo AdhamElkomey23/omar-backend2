@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, Users, Plus, Edit, Trash2, UserCheck, DollarSign } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CalendarIcon, Users, Plus, Edit, Trash2, UserCheck, DollarSign, Download, Filter } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { t, isRTL } from "@/lib/i18n";
 import { insertWorkerSchema, insertWorkerAttendanceSchema } from "@shared/schema";
@@ -39,6 +40,8 @@ export default function Workers() {
   const [workerDialogOpen, setWorkerDialogOpen] = useState(false);
   const [editingAttendance, setEditingAttendance] = useState<WorkerAttendance | null>(null);
   const [activeTab, setActiveTab] = useState("workers");
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+  const [attendanceWorkerFilter, setAttendanceWorkerFilter] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch workers
@@ -50,6 +53,12 @@ export default function Workers() {
   const { data: dailyAttendance = [], isLoading: attendanceLoading } = useQuery({
     queryKey: ['/api/attendance/date', format(selectedDate, 'yyyy-MM-dd')],
     enabled: !!selectedDate,
+  });
+
+  // Fetch monthly attendance for the selected worker and month
+  const { data: monthlyAttendance = [], isLoading: monthlyAttendanceLoading } = useQuery({
+    queryKey: ['/api/attendance/worker', attendanceWorkerFilter, format(startOfMonth(selectedMonth), 'yyyy-MM-dd'), format(endOfMonth(selectedMonth), 'yyyy-MM-dd')],
+    enabled: !!attendanceWorkerFilter,
   });
 
   // Fetch monthly summary for selected worker
@@ -208,6 +217,103 @@ export default function Workers() {
     attendanceForm.setValue('attendanceDate', format(selectedDate, 'yyyy-MM-dd'));
   }, [selectedDate, attendanceForm]);
 
+  // Generate PDF export for workers data
+  const generateWorkersPDF = () => {
+    const printContent = `
+      <html>
+        <head>
+          <title>Workers Report - Al-Wasiloon Fertilizer Factory</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .company-name { font-size: 24px; font-weight: bold; color: #2563eb; }
+            .report-title { font-size: 18px; margin: 10px 0; }
+            .report-date { font-size: 14px; color: #666; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background-color: #f8f9fa; font-weight: bold; }
+            .worker-card { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+            .worker-name { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+            .worker-details { font-size: 14px; color: #666; }
+            .summary { margin-top: 30px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="company-name">Al-Wasiloon Fertilizer Factory</div>
+            <div class="report-title">Workers Report</div>
+            <div class="report-date">Generated on ${format(new Date(), 'MMMM dd, yyyy')}</div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Department</th>
+                <th>Hire Date</th>
+                <th>Monthly Salary</th>
+                <th>Contact</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${workers.map((worker: Worker) => `
+                <tr>
+                  <td>${worker.name}</td>
+                  <td>${worker.position}</td>
+                  <td>${worker.department}</td>
+                  <td>${worker.hireDate}</td>
+                  <td>${formatCurrency(worker.salary)}</td>
+                  <td>${worker.phone}<br/>${worker.email}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="summary">
+            <h3>Summary</h3>
+            <p><strong>Total Workers:</strong> ${workers.length}</p>
+            <p><strong>Total Monthly Payroll:</strong> ${formatCurrency(workers.reduce((sum: number, w: Worker) => sum + w.salary, 0))}</p>
+            <p><strong>Departments:</strong> ${[...new Set(workers.map((w: Worker) => w.department))].join(', ')}</p>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    }
+  };
+
+  // Generate monthly attendance data for display
+  const generateMonthlyAttendanceData = () => {
+    if (!attendanceWorkerFilter) return [];
+    
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
+    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    
+    return daysInMonth.map(day => {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      const attendance = monthlyAttendance.find((att: WorkerAttendance) => 
+        att.attendanceDate === dateStr
+      );
+      
+      return {
+        date: day,
+        dateStr,
+        attendance
+      };
+    });
+  };
+
   return (
     <div className="space-y-6" dir={isRTL() ? 'rtl' : 'ltr'}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -355,6 +461,17 @@ export default function Workers() {
         </TabsList>
         
         <TabsContent value="workers" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-medium">Workers List</h3>
+              <p className="text-sm text-muted-foreground">Manage your factory workers</p>
+            </div>
+            <Button onClick={generateWorkersPDF} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export PDF
+            </Button>
+          </div>
+          
           {workersLoading ? (
             <div className="text-center">Loading workers...</div>
           ) : (
@@ -397,94 +514,192 @@ export default function Workers() {
         </TabsContent>
 
         <TabsContent value="attendance" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserCheck className="h-5 w-5" />
-                Daily Attendance - {format(selectedDate, 'MMMM dd, yyyy')}
-              </CardTitle>
-              <div className="flex items-center gap-4">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(selectedDate, 'PPP')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => date && setSelectedDate(date)}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {attendanceLoading ? (
-                <p>Loading...</p>
-              ) : (
-                <div className="space-y-4">
-                  {workers.map((worker: Worker) => {
-                    const attendance = getAttendanceForWorker(worker.id);
-                    return (
-                      <div key={worker.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg gap-4">
-                        <div className="flex items-center gap-4 min-w-0 flex-1">
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-medium truncate">{worker.name}</h3>
-                            <p className="text-sm text-muted-foreground truncate">{worker.position} - {worker.department}</p>
-                          </div>
-                          {attendance && (
-                            <Badge variant={getStatusBadgeVariant(attendance.status)} className="flex-shrink-0">
-                              {attendance.status}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {attendance ? (
-                            <>
-                              <div className="text-sm text-muted-foreground">
-                                {attendance.checkInTime && (
-                                  <span>In: {attendance.checkInTime}</span>
-                                )}
-                                {attendance.checkOutTime && (
-                                  <span className="ml-2">Out: {attendance.checkOutTime}</span>
-                                )}
+          <Tabs defaultValue="daily" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="daily">Daily View</TabsTrigger>
+              <TabsTrigger value="monthly">Monthly View</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="daily" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserCheck className="h-5 w-5" />
+                    Daily Attendance - {format(selectedDate, 'MMMM dd, yyyy')}
+                  </CardTitle>
+                  <div className="flex items-center gap-4">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="justify-start text-left font-normal">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {format(selectedDate, 'PPP')}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={(date) => date && setSelectedDate(date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {attendanceLoading ? (
+                    <p>Loading...</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {workers.map((worker: Worker) => {
+                        const attendance = getAttendanceForWorker(worker.id);
+                        return (
+                          <div key={worker.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg gap-4">
+                            <div className="flex items-center gap-4 min-w-0 flex-1">
+                              <div className="min-w-0 flex-1">
+                                <h3 className="font-medium truncate">{worker.name}</h3>
+                                <p className="text-sm text-muted-foreground truncate">{worker.position} - {worker.department}</p>
                               </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openAttendanceDialog(worker, attendance)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => deleteAttendanceMutation.mutate(attendance.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openAttendanceDialog(worker)}
-                            >
-                              Mark Attendance
-                            </Button>
-                          )}
-                        </div>
+                              {attendance && (
+                                <Badge variant={getStatusBadgeVariant(attendance.status)} className="flex-shrink-0">
+                                  {attendance.status}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {attendance ? (
+                                <>
+                                  <div className="text-sm text-muted-foreground">
+                                    {attendance.checkInTime && (
+                                      <span>In: {attendance.checkInTime}</span>
+                                    )}
+                                    {attendance.checkOutTime && (
+                                      <span className="ml-2">Out: {attendance.checkOutTime}</span>
+                                    )}
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openAttendanceDialog(worker, attendance)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => deleteAttendanceMutation.mutate(attendance.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openAttendanceDialog(worker)}
+                                >
+                                  Mark Attendance
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="monthly" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Filter className="h-5 w-5" />
+                    Monthly Attendance - {format(selectedMonth, 'MMMM yyyy')}
+                  </CardTitle>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Select value={attendanceWorkerFilter?.toString() || ""} onValueChange={(value) => {
+                      setAttendanceWorkerFilter(value ? parseInt(value) : null);
+                    }}>
+                      <SelectTrigger className="w-64">
+                        <SelectValue placeholder="Select a worker" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {workers.map((worker: Worker) => (
+                          <SelectItem key={worker.id} value={worker.id.toString()}>
+                            {worker.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="justify-start text-left font-normal">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {format(selectedMonth, 'MMMM yyyy')}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={selectedMonth}
+                          onSelect={(date) => date && setSelectedMonth(date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {attendanceWorkerFilter ? (
+                    monthlyAttendanceLoading ? (
+                      <p>Loading monthly data...</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Day</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Check In</TableHead>
+                              <TableHead>Check Out</TableHead>
+                              <TableHead>Hours</TableHead>
+                              <TableHead>Overtime</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {generateMonthlyAttendanceData().map(({ date, dateStr, attendance }) => (
+                              <TableRow key={dateStr}>
+                                <TableCell>{format(date, 'dd')}</TableCell>
+                                <TableCell>{format(date, 'EEE')}</TableCell>
+                                <TableCell>
+                                  {attendance ? (
+                                    <Badge variant={getStatusBadgeVariant(attendance.status)}>
+                                      {attendance.status}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-muted-foreground">-</span>
+                                  )}
+                                </TableCell>
+                                <TableCell>{attendance?.checkInTime || '-'}</TableCell>
+                                <TableCell>{attendance?.checkOutTime || '-'}</TableCell>
+                                <TableCell>{attendance?.hoursWorked || '-'}</TableCell>
+                                <TableCell>{attendance?.overtimeHours || '-'}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    )
+                  ) : (
+                    <p className="text-center text-muted-foreground">Select a worker to view monthly attendance</p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="deductions" className="space-y-6">
