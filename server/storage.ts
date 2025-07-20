@@ -199,7 +199,10 @@ export class MemStorage implements IStorage {
       { productId: 2, quantity: 15, totalAmount: 27000, saleDate: new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000) },
       { productId: 3, quantity: 10, totalAmount: 12000, saleDate: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000) },
       { productId: 1, quantity: 25, totalAmount: 62500, saleDate: new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000) },
-      { productId: 4, quantity: 8, totalAmount: 17600, saleDate: new Date(today.getTime() - 15 * 24 * 60 * 60 * 1000) }
+      { productId: 4, quantity: 8, totalAmount: 17600, saleDate: new Date(today.getTime() - 15 * 24 * 60 * 60 * 1000) },
+      { productId: 5, quantity: 12, totalAmount: 36000, saleDate: new Date(today.getTime() - 20 * 24 * 60 * 60 * 1000) },
+      { productId: 2, quantity: 30, totalAmount: 54000, saleDate: new Date(today.getTime() - 25 * 24 * 60 * 60 * 1000) },
+      { productId: 1, quantity: 18, totalAmount: 45000, saleDate: new Date(today.getTime() - 28 * 24 * 60 * 60 * 1000) }
     ];
     
     const clients = [
@@ -212,9 +215,10 @@ export class MemStorage implements IStorage {
 
     sampleSales.forEach((sale, index) => {
       const client = clients[index % clients.length];
+      const productNames = ['NPK Fertilizer', 'Urea', 'Organic Compost', 'Phosphate', 'Potassium Nitrate'];
       const newSale: Sale = {
         id: this.saleCounter++,
-        productName: "Ammonium Nitrate", // Use actual storage item name
+        productName: productNames[index % productNames.length],
         quantity: sale.quantity,
         totalAmount: sale.totalAmount,
         saleDate: sale.saleDate,
@@ -302,6 +306,70 @@ export class MemStorage implements IStorage {
         createdAt: new Date()
       };
       this.storageItems.set(newItem.id, newItem);
+    });
+
+    // Sample workers
+    const sampleWorkers = [
+      {
+        name: 'Ahmed Mohamed',
+        position: 'Production Supervisor',
+        department: 'Production',
+        salary: 8000,
+        phone: '+20 100 111 2233',
+        email: 'ahmed.mohamed@alwasiloon.com',
+        hireDate: '2022-03-15'
+      },
+      {
+        name: 'Fatima Ibrahim',
+        position: 'Quality Control Specialist',
+        department: 'QualityControl',
+        salary: 6500,
+        phone: '+20 101 222 3344',
+        email: 'fatima.ibrahim@alwasiloon.com',
+        hireDate: '2023-01-10'
+      },
+      {
+        name: 'Mohamed Hassan',
+        position: 'Machine Operator',
+        department: 'Production',
+        salary: 5500,
+        phone: '+20 102 333 4455',
+        email: 'mohamed.hassan@alwasiloon.com',
+        hireDate: '2021-11-20'
+      },
+      {
+        name: 'Amira Ali',
+        position: 'Storage Manager',
+        department: 'Storage',
+        salary: 7000,
+        phone: '+20 103 444 5566',
+        email: 'amira.ali@alwasiloon.com',
+        hireDate: '2022-07-08'
+      },
+      {
+        name: 'Khaled Mahmoud',
+        position: 'Maintenance Technician',
+        department: 'Maintenance',
+        salary: 6000,
+        phone: '+20 104 555 6677',
+        email: 'khaled.mahmoud@alwasiloon.com',
+        hireDate: '2023-05-22'
+      }
+    ];
+
+    sampleWorkers.forEach(worker => {
+      const newWorker: Worker = {
+        id: this.workerCounter++,
+        name: worker.name,
+        position: worker.position,
+        department: worker.department,
+        salary: worker.salary,
+        phone: worker.phone,
+        email: worker.email,
+        hireDate: worker.hireDate,
+        createdAt: new Date()
+      };
+      this.workers.set(newWorker.id, newWorker);
     });
   }
 

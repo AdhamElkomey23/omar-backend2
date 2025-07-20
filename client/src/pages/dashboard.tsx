@@ -63,24 +63,13 @@ export default function Dashboard() {
     );
   }
 
-  // Placeholder for actual data - ensuring type safety
-  const data: any = dashboardData || {
-    totalIncome: 169100,
-    totalExpenses: 120000,
-    profit: 49100,
-    topSellingProducts: [
-      { productId: 1, productName: "NPK Fertilizer", totalSold: 45, totalRevenue: 112500 },
-      { productId: 2, productName: "Urea", totalSold: 15, totalRevenue: 27000 },
-      { productId: 3, productName: "Organic Compost", totalSold: 10, totalRevenue: 12000 },
-      { productId: 4, productName: "Phosphate", totalSold: 8, totalRevenue: 17600 }
-    ],
-    topExpenses: [
-      { expenseName: "Worker Salaries", amount: 50000, category: "Salaries" },
-      { expenseName: "Raw Materials", amount: 35000, category: "RawMaterials" },
-      { expenseName: "Electricity Bill", amount: 15000, category: "Utilities" },
-      { expenseName: "Transportation", amount: 12000, category: "Transportation" },
-      { expenseName: "Equipment Repair", amount: 8000, category: "Maintenance" }
-    ],
+  // Use actual data from the server
+  const data = dashboardData || {
+    totalIncome: 0,
+    totalExpenses: 0,
+    profit: 0,
+    topSellingProducts: [],
+    topExpenses: [],
     recentTransactions: []
   };
 
@@ -95,13 +84,34 @@ export default function Dashboard() {
     value: expense.amount
   }));
 
-  // Generate sample chart data
-  const salesTrend = [
-    { name: 'Week 1', sales: 35000 },
-    { name: 'Week 2', sales: 42000 },
-    { name: 'Week 3', sales: 38000 },
-    { name: 'Week 4', sales: 54100 }
-  ];
+  // Generate chart data from real transactions
+  const generateSalesTrend = () => {
+    if (!data.recentTransactions || data.recentTransactions.length === 0) {
+      return [
+        { name: 'No Data', sales: 0 }
+      ];
+    }
+
+    // Group sales by weeks for the trend chart
+    const salesByWeek = new Map();
+    const now = new Date();
+    
+    for (let i = 3; i >= 0; i--) {
+      const weekStart = new Date(now.getTime() - (i + 1) * 7 * 24 * 60 * 60 * 1000);
+      const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+      const weekName = `Week ${4 - i}`;
+      
+      const weekSales = data.recentTransactions
+        .filter((t: any) => t.type === 'sale' && new Date(t.date) >= weekStart && new Date(t.date) < weekEnd)
+        .reduce((sum: number, t: any) => sum + t.amount, 0);
+      
+      salesByWeek.set(weekName, weekSales);
+    }
+    
+    return Array.from(salesByWeek.entries()).map(([name, sales]) => ({ name, sales }));
+  };
+
+  const salesTrend = generateSalesTrend();
 
   // Format profit percentage
   const profitPercentage = (data.profit / data.totalIncome) * 100;
