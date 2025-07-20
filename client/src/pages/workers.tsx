@@ -14,12 +14,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, Users, Plus, Edit, Trash2, UserCheck } from "lucide-react";
+import { CalendarIcon, Users, Plus, Edit, Trash2, UserCheck, DollarSign } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { t, isRTL } from "@/lib/i18n";
 import { insertWorkerSchema, insertWorkerAttendanceSchema } from "@shared/schema";
 import type { Worker, WorkerAttendance } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
+import SalaryDeductions from "@/components/salary-deductions";
 
 const attendanceSchema = insertWorkerAttendanceSchema.extend({
   attendanceDate: z.string().min(1, "Date is required"),
@@ -49,6 +50,12 @@ export default function Workers() {
   const { data: dailyAttendance = [], isLoading: attendanceLoading } = useQuery({
     queryKey: ['/api/attendance/date', format(selectedDate, 'yyyy-MM-dd')],
     enabled: !!selectedDate,
+  });
+
+  // Fetch monthly summary for selected worker
+  const { data: monthlySummary } = useQuery({
+    queryKey: ['/api/attendance/summary', selectedWorker?.id, selectedDate.getFullYear(), selectedDate.getMonth() + 1],
+    enabled: !!selectedWorker,
   });
 
   // Worker form with proper number coercion for salary
@@ -340,9 +347,11 @@ export default function Workers() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="workers">Workers List</TabsTrigger>
-          <TabsTrigger value="attendance">Daily Attendance</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+          <TabsTrigger value="workers" className="text-xs md:text-sm">Workers List</TabsTrigger>
+          <TabsTrigger value="attendance" className="text-xs md:text-sm">Daily Attendance</TabsTrigger>
+          <TabsTrigger value="deductions" className="text-xs md:text-sm">Salary Deductions</TabsTrigger>
+          <TabsTrigger value="summary" className="text-xs md:text-sm">Monthly Summary</TabsTrigger>
         </TabsList>
         
         <TabsContent value="workers" className="space-y-6">
@@ -473,6 +482,113 @@ export default function Workers() {
                     );
                   })}
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="deductions" className="space-y-6">
+          <SalaryDeductions />
+        </TabsContent>
+
+        <TabsContent value="summary" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Monthly Summary
+              </CardTitle>
+              <div className="flex items-center gap-4">
+                <Select value={selectedWorker?.id.toString() || ""} onValueChange={(value) => {
+                  const worker = workers.find((w: Worker) => w.id.toString() === value);
+                  setSelectedWorker(worker || null);
+                }}>
+                  <SelectTrigger className="w-64">
+                    <SelectValue placeholder="Select a worker" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {workers.map((worker: Worker) => (
+                      <SelectItem key={worker.id} value={worker.id.toString()}>
+                        {worker.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {selectedWorker && monthlySummary ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium">Days Worked</h3>
+                        <p className="text-2xl font-bold text-green-600">{monthlySummary.totalDaysWorked}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium">Days Absent</h3>
+                        <p className="text-2xl font-bold text-red-600">{monthlySummary.totalAbsent}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium">Late Days</h3>
+                        <p className="text-2xl font-bold text-yellow-600">{monthlySummary.totalLate}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium">Total Hours</h3>
+                        <p className="text-2xl font-bold">{monthlySummary.totalHours}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium">Overtime Hours</h3>
+                        <p className="text-2xl font-bold text-blue-600">{monthlySummary.totalOvertimeHours}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium">Salary Deductions</h3>
+                        <p className="text-2xl font-bold text-red-600">{formatCurrency(monthlySummary.salaryDeductions)}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="md:col-span-2 lg:col-span-3">
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium">Net Salary</h3>
+                        <p className="text-3xl font-bold text-green-600">
+                          {formatCurrency(selectedWorker.salary - monthlySummary.salaryDeductions)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Base: {formatCurrency(selectedWorker.salary)} - Deductions: {formatCurrency(monthlySummary.salaryDeductions)}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground">Select a worker to view monthly summary</p>
               )}
             </CardContent>
           </Card>
