@@ -87,12 +87,12 @@ export function Navbar() {
         </div>
 
         {/* Center - Title and time */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-shrink min-w-0">
           {/* Mobile: Show compact info */}
           {isMobile ? (
-            <div className="text-center">
-              <div className="text-sm font-semibold text-foreground">
-                {t("appSubtitle")}
+            <div className="text-center min-w-0">
+              <div className="text-xs font-semibold text-foreground truncate max-w-32">
+                Mining and Chemical Industries
               </div>
               <div className="text-xs text-muted-foreground">
                 {formatTime(currentTime)}
@@ -102,7 +102,7 @@ export function Navbar() {
             /* Desktop: Show full info */
             <div className="text-center">
               <div className="text-sm font-semibold text-foreground">
-                {t("appTitle")} {t("appSubtitle")}
+                Al-Wasiloon Mining and Chemical Industries
               </div>
               <div className="text-xs text-muted-foreground">
                 {formatDate(currentTime)} • {formatTime(currentTime)}

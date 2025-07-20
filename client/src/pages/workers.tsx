@@ -238,7 +238,7 @@ export default function Workers() {
                     )}
                   />
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={workerForm.control}
                       name="role"
@@ -268,7 +268,7 @@ export default function Workers() {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={workerForm.control}
                       name="salary"
@@ -298,7 +298,7 @@ export default function Workers() {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={workerForm.control}
                       name="email"
@@ -339,11 +339,11 @@ export default function Workers() {
       </div>
 
       <Tabs defaultValue="attendance" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="attendance">Daily Attendance</TabsTrigger>
-          <TabsTrigger value="workers">Workers List</TabsTrigger>
-          <TabsTrigger value="deductions">Salary Deductions</TabsTrigger>
-          <TabsTrigger value="summary">Monthly Summary</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+          <TabsTrigger value="attendance" className="text-xs md:text-sm">Daily Attendance</TabsTrigger>
+          <TabsTrigger value="workers" className="text-xs md:text-sm">Workers List</TabsTrigger>
+          <TabsTrigger value="deductions" className="text-xs md:text-sm">Salary Deductions</TabsTrigger>
+          <TabsTrigger value="summary" className="text-xs md:text-sm">Monthly Summary</TabsTrigger>
         </TabsList>
 
         <TabsContent value="attendance" className="space-y-6">
@@ -380,19 +380,19 @@ export default function Workers() {
                   {workers.map((worker: Worker) => {
                     const attendance = getAttendanceForWorker(worker.id);
                     return (
-                      <div key={worker.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-4">
-                          <div>
-                            <h3 className="font-medium">{worker.name}</h3>
-                            <p className="text-sm text-muted-foreground">{worker.role} - {worker.department}</p>
+                      <div key={worker.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg gap-4">
+                        <div className="flex items-center gap-4 min-w-0 flex-1">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-medium truncate">{worker.name}</h3>
+                            <p className="text-sm text-muted-foreground truncate">{worker.role} - {worker.department}</p>
                           </div>
                           {attendance && (
-                            <Badge variant={getStatusBadgeVariant(attendance.status)}>
+                            <Badge variant={getStatusBadgeVariant(attendance.status)} className="flex-shrink-0">
                               {attendance.status}
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                           {attendance ? (
                             <>
                               <div className="text-sm text-muted-foreground">
