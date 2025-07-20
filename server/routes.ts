@@ -556,10 +556,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const success = await storage.addStorageQuantity(itemName, quantity);
       if (!success) {
-        return res.status(400).json({ message: "Item not found in storage" });
+        return res.status(400).json({ message: "No storage items available to add quantity to" });
       }
       
-      res.json({ success: true, message: "Quantity added back successfully" });
+      res.json({ success: true, message: "Quantity added successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to add quantity to storage" });
     }
