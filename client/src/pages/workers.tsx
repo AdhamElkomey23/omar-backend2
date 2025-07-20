@@ -7,18 +7,14 @@ import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SalaryDeductions from "@/components/salary-deductions";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CalendarIcon, Users, Clock, DollarSign, Plus, Edit, Trash2, UserCheck } from "lucide-react";
+import { CalendarIcon, Users, Plus, Edit, Trash2, UserCheck } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { t, isRTL } from "@/lib/i18n";
 import { insertWorkerSchema, insertWorkerAttendanceSchema } from "@shared/schema";
@@ -41,6 +37,7 @@ export default function Workers() {
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
   const [workerDialogOpen, setWorkerDialogOpen] = useState(false);
   const [editingAttendance, setEditingAttendance] = useState<WorkerAttendance | null>(null);
+  const [activeTab, setActiveTab] = useState("workers");
   const queryClient = useQueryClient();
 
   // Fetch workers
@@ -54,12 +51,6 @@ export default function Workers() {
     enabled: !!selectedDate,
   });
 
-  // Fetch monthly summary for selected worker
-  const { data: monthlySummary } = useQuery({
-    queryKey: ['/api/attendance/summary', selectedWorker?.id, selectedDate.getFullYear(), selectedDate.getMonth() + 1],
-    enabled: !!selectedWorker,
-  });
-
   // Worker form with proper number coercion for salary
   const workerFormSchema = insertWorkerSchema.extend({
     salary: z.coerce.number().min(0, "Salary must be a positive number"),
@@ -69,13 +60,12 @@ export default function Workers() {
     resolver: zodResolver(workerFormSchema),
     defaultValues: {
       name: "",
-      role: "",
+      position: "",
       department: "",
       salary: 0,
       hireDate: format(new Date(), 'yyyy-MM-dd'),
       email: "",
       phone: "",
-      status: "active"
     }
   });
 
@@ -104,7 +94,14 @@ export default function Workers() {
     },
     onError: (error: any) => {
       console.error('Worker creation failed:', error);
-      // Handle error appropriately - could show toast notification
+    }
+  });
+
+  // Delete worker mutation
+  const deleteWorkerMutation = useMutation({
+    mutationFn: (id: number) => apiRequest('DELETE', `/api/workers/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/workers'] });
     }
   });
 
@@ -113,7 +110,6 @@ export default function Workers() {
     mutationFn: (data: AttendanceFormValues) => apiRequest('POST', '/api/attendance', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/attendance/date'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/attendance/summary'] });
       setAttendanceDialogOpen(false);
       attendanceForm.reset();
     }
@@ -125,7 +121,6 @@ export default function Workers() {
       apiRequest('PUT', `/api/attendance/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/attendance/date'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/attendance/summary'] });
       setAttendanceDialogOpen(false);
       setEditingAttendance(null);
       attendanceForm.reset();
@@ -137,7 +132,6 @@ export default function Workers() {
     mutationFn: (id: number) => apiRequest('DELETE', `/api/attendance/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/attendance/date'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/attendance/summary'] });
     }
   });
 
@@ -150,6 +144,12 @@ export default function Workers() {
       updateAttendanceMutation.mutate({ id: editingAttendance.id, data });
     } else {
       addAttendanceMutation.mutate(data);
+    }
+  };
+
+  const handleDeleteWorker = (worker: Worker) => {
+    if (window.confirm(`Are you sure you want to delete ${worker.name}? This action cannot be undone.`)) {
+      deleteWorkerMutation.mutate(worker.id);
     }
   };
 
@@ -208,9 +208,8 @@ export default function Workers() {
           <h1 className="text-2xl font-bold">Workers & Attendance</h1>
           <p className="text-muted-foreground">Manage workers and track daily attendance</p>
         </div>
-        
-        <div className="flex gap-2">
-          <Dialog>
+        {activeTab === "workers" && (
+          <Dialog open={workerDialogOpen} onOpenChange={setWorkerDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -237,44 +236,50 @@ export default function Workers() {
                       </FormItem>
                     )}
                   />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={workerForm.control}
-                      name="role"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Job Role</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
+                  <FormField
+                    control={workerForm.control}
+                    name="position"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Position</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={workerForm.control}
                       name="department"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Department</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select department" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Production">Production</SelectItem>
+                              <SelectItem value="QualityControl">Quality Control</SelectItem>
+                              <SelectItem value="Storage">Storage</SelectItem>
+                              <SelectItem value="Maintenance">Maintenance</SelectItem>
+                              <SelectItem value="Administration">Administration</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={workerForm.control}
                       name="salary"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Monthly Salary (EGP)</FormLabel>
+                          <FormLabel>Monthly Salary</FormLabel>
                           <FormControl>
                             <Input type="number" {...field} />
                           </FormControl>
@@ -282,43 +287,14 @@ export default function Workers() {
                         </FormItem>
                       )}
                     />
-                    
-                    <FormField
-                      control={workerForm.control}
-                      name="hireDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Hire Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={workerForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email (Optional)</FormLabel>
-                          <FormControl>
-                            <Input type="email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
+                  <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={workerForm.control}
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Phone (Optional)</FormLabel>
+                          <FormLabel>Phone</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -326,32 +302,97 @@ export default function Workers() {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={workerForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                  
-                  <Button type="submit" className="w-full" disabled={addWorkerMutation.isPending}>
+                  <FormField
+                    control={workerForm.control}
+                    name="hireDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hire Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" disabled={addWorkerMutation.isPending}>
                     {addWorkerMutation.isPending ? "Adding..." : "Add Worker"}
                   </Button>
                 </form>
               </Form>
             </DialogContent>
           </Dialog>
-        </div>
+        )}
       </div>
 
-      <Tabs defaultValue="attendance" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-          <TabsTrigger value="attendance" className="text-xs md:text-sm">Daily Attendance</TabsTrigger>
-          <TabsTrigger value="workers" className="text-xs md:text-sm">Workers List</TabsTrigger>
-          <TabsTrigger value="deductions" className="text-xs md:text-sm">Salary Deductions</TabsTrigger>
-          <TabsTrigger value="summary" className="text-xs md:text-sm">Monthly Summary</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="workers">Workers List</TabsTrigger>
+          <TabsTrigger value="attendance">Daily Attendance</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="workers" className="space-y-6">
+          {workersLoading ? (
+            <div className="text-center">Loading workers...</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {workers.map((worker: Worker) => (
+                <Card key={worker.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{worker.name}</h3>
+                        <p className="text-sm text-muted-foreground">{worker.position}</p>
+                        <p className="text-sm text-muted-foreground">{worker.department}</p>
+                        <p className="text-sm font-medium mt-2">
+                          {formatCurrency(worker.salary)}/month
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Hired: {worker.hireDate}
+                        </p>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          <p>{worker.phone}</p>
+                          <p>{worker.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteWorker(worker)}
+                          disabled={deleteWorkerMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
 
         <TabsContent value="attendance" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserCheck className="h-5 w-5" />
-                {t('dailyAttendance')} - {format(selectedDate, 'MMMM dd, yyyy')}
+                Daily Attendance - {format(selectedDate, 'MMMM dd, yyyy')}
               </CardTitle>
               <div className="flex items-center gap-4">
                 <Popover>
@@ -374,7 +415,7 @@ export default function Workers() {
             </CardHeader>
             <CardContent>
               {attendanceLoading ? (
-                <p>{t('loading')}</p>
+                <p>Loading...</p>
               ) : (
                 <div className="space-y-4">
                   {workers.map((worker: Worker) => {
@@ -384,7 +425,7 @@ export default function Workers() {
                         <div className="flex items-center gap-4 min-w-0 flex-1">
                           <div className="min-w-0 flex-1">
                             <h3 className="font-medium truncate">{worker.name}</h3>
-                            <p className="text-sm text-muted-foreground truncate">{worker.role} - {worker.department}</p>
+                            <p className="text-sm text-muted-foreground truncate">{worker.position} - {worker.department}</p>
                           </div>
                           {attendance && (
                             <Badge variant={getStatusBadgeVariant(attendance.status)} className="flex-shrink-0">
@@ -436,166 +477,6 @@ export default function Workers() {
             </CardContent>
           </Card>
         </TabsContent>
-
-        <TabsContent value="workers" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Workers List
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {workersLoading ? (
-                <p>Loading workers...</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Salary</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {workers.map((worker: Worker) => (
-                      <TableRow key={worker.id}>
-                        <TableCell className="font-medium">{worker.name}</TableCell>
-                        <TableCell>{worker.role}</TableCell>
-                        <TableCell>{worker.department}</TableCell>
-                        <TableCell>{formatCurrency(worker.salary)}</TableCell>
-                        <TableCell>
-                          <Badge variant={worker.status === 'active' ? 'default' : 'secondary'}>
-                            {worker.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedWorker(worker)}
-                          >
-                            View Details
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="summary" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
-                Monthly Summary
-              </CardTitle>
-              <div className="flex items-center gap-4">
-                <Select value={selectedWorker?.id.toString() || ""} onValueChange={(value) => {
-                  const worker = workers.find((w: Worker) => w.id.toString() === value);
-                  setSelectedWorker(worker || null);
-                }}>
-                  <SelectTrigger className="w-64">
-                    <SelectValue placeholder="Select a worker" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {workers.map((worker: Worker) => (
-                      <SelectItem key={worker.id} value={worker.id.toString()}>
-                        {worker.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {selectedWorker && monthlySummary ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-center">
-                        <h3 className="text-lg font-medium">Days Worked</h3>
-                        <p className="text-2xl font-bold text-green-600">{monthlySummary.totalDaysWorked}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-center">
-                        <h3 className="text-lg font-medium">Days Absent</h3>
-                        <p className="text-2xl font-bold text-red-600">{monthlySummary.totalAbsent}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-center">
-                        <h3 className="text-lg font-medium">Late Days</h3>
-                        <p className="text-2xl font-bold text-yellow-600">{monthlySummary.totalLate}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-center">
-                        <h3 className="text-lg font-medium">Total Hours</h3>
-                        <p className="text-2xl font-bold">{monthlySummary.totalHours}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-center">
-                        <h3 className="text-lg font-medium">Overtime Hours</h3>
-                        <p className="text-2xl font-bold text-blue-600">{monthlySummary.totalOvertimeHours}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-center">
-                        <h3 className="text-lg font-medium">Salary Deductions</h3>
-                        <p className="text-2xl font-bold text-red-600">{formatCurrency(monthlySummary.salaryDeductions)}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="md:col-span-2 lg:col-span-3">
-                    <CardContent className="p-4">
-                      <div className="text-center">
-                        <h3 className="text-lg font-medium">Net Salary</h3>
-                        <p className="text-3xl font-bold text-green-600">
-                          {formatCurrency(selectedWorker.salary - monthlySummary.salaryDeductions)}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Base: {formatCurrency(selectedWorker.salary)} - Deductions: {formatCurrency(monthlySummary.salaryDeductions)}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : (
-                <p className="text-center text-muted-foreground">Select a worker to view monthly summary</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="deductions" className="space-y-6">
-          <SalaryDeductions />
-        </TabsContent>
       </Tabs>
 
       {/* Attendance Dialog */}
@@ -641,7 +522,7 @@ export default function Workers() {
                   name="checkInTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('checkInTime')}</FormLabel>
+                      <FormLabel>Check In Time</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -649,13 +530,12 @@ export default function Workers() {
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={attendanceForm.control}
                   name="checkOutTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('checkOutTime')}</FormLabel>
+                      <FormLabel>Check Out Time</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -664,14 +544,14 @@ export default function Workers() {
                   )}
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={attendanceForm.control}
                   name="hoursWorked"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('hoursWorked')}</FormLabel>
+                      <FormLabel>Hours Worked</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.5" {...field} />
                       </FormControl>
@@ -679,13 +559,12 @@ export default function Workers() {
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={attendanceForm.control}
                   name="overtimeHours"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('overtimeHours')}</FormLabel>
+                      <FormLabel>Overtime Hours</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.5" {...field} />
                       </FormControl>
@@ -694,27 +573,12 @@ export default function Workers() {
                   )}
                 />
               </div>
-              
-              <FormField
-                control={attendanceForm.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notes (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={addAttendanceMutation.isPending || updateAttendanceMutation.isPending}
-              >
-                {editingAttendance ? t('updateAttendance') : t('markAttendance')}
+
+              <Button type="submit" disabled={addAttendanceMutation.isPending || updateAttendanceMutation.isPending}>
+                {editingAttendance 
+                  ? (updateAttendanceMutation.isPending ? "Updating..." : "Update Attendance")
+                  : (addAttendanceMutation.isPending ? "Adding..." : "Mark Attendance")
+                }
               </Button>
             </form>
           </Form>
