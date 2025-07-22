@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Built-By: Al-Wasiloon APK Builder
-Created-By: Android APK Builder
-
-Name: AndroidManifest.xml
-SHA-256-Digest: Gn8soH/6FaTtpUIBy8WOxGk9ZrLxthGnJ/coxKhCwVo=
-

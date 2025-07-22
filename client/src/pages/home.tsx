@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 import { t, isRTL } from '@/lib/i18n';
-import logoImage from "@assets/الواصلون (1)_1749400506920.png";
+// import logoImage from "@assets/الواصلون (1)_1749400506920.png";
 import { 
   Factory, 
   TrendingUp, 
@@ -30,11 +30,9 @@ export default function Home() {
       <section className="relative bg-gradient-to-br from-green-600 to-green-800 text-white py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <img 
-              src={logoImage} 
-              alt="Al-Wasiloon Logo" 
-              className="h-32 w-32 mx-auto mb-6 object-contain"
-            />
+            <div className="h-32 w-32 mx-auto mb-6 bg-white rounded-full flex items-center justify-center">
+              <Factory className="h-16 w-16 text-green-800" />
+            </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               {t('appTitle')}
             </h1>
