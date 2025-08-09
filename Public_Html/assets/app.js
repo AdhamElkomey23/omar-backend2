@@ -101,90 +101,132 @@ class FactoryManagementApp {
       const dashboardData = await this.apiRequest('/dashboard.php');
       
       return `
-        <div>
-          <div class="card-header">
-            <h1>Dashboard</h1>
+        <div class="content-area">
+          <!-- Welcome Header -->
+          <div class="card" style="background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark)); color: white; margin-bottom: 2rem;">
+            <div class="card-content" style="text-align: center; padding: 3rem 2rem;">
+              <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center;">
+                <i class="ri-dashboard-3-line" style="font-size: 2.5rem; color: white;"></i>
+              </div>
+              <h1 style="font-size: 2.5rem; margin: 0 0 1rem 0; font-weight: 700;">الواسطون</h1>
+              <p style="font-size: 1.2rem; margin: 0; opacity: 0.9;">نظام إدارة المصنع المتقدم</p>
+              <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <button class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                  عرض التقارير
+                </button>
+                <button class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                  إعدادات النظام  
+                </button>
+              </div>
+            </div>
           </div>
 
-          <!-- Stats Cards -->
+          <!-- Stats Overview -->
           <div class="stats-grid">
             <div class="stat-card">
+              <div class="stat-icon">
+                <i class="ri-money-dollar-circle-line"></i>
+              </div>
               <div class="stat-value">$${(dashboardData.totalIncome || 0).toLocaleString()}</div>
-              <div class="stat-label">Total Revenue</div>
-              <div class="stat-change positive">+20.1% from last month</div>
+              <div class="stat-label">إجمالي الإيرادات</div>
+              <div class="stat-change positive">+20.1% من الشهر الماضي</div>
             </div>
             
             <div class="stat-card">
+              <div class="stat-icon">
+                <i class="ri-shopping-cart-line"></i>
+              </div>
               <div class="stat-value">$${(dashboardData.totalExpenses || 0).toLocaleString()}</div>
-              <div class="stat-label">Total Expenses</div>
-              <div class="stat-change negative">+12% from last month</div>
+              <div class="stat-label">إجمالي المصروفات</div>
+              <div class="stat-change negative">+12% من الشهر الماضي</div>
             </div>
             
             <div class="stat-card">
+              <div class="stat-icon">
+                <i class="ri-line-chart-line"></i>
+              </div>
               <div class="stat-value">$${((dashboardData.totalIncome || 0) - (dashboardData.totalExpenses || 0)).toLocaleString()}</div>
-              <div class="stat-label">Net Profit</div>
-              <div class="stat-change positive">+8.1% from last month</div>
+              <div class="stat-label">صافي الربح</div>
+              <div class="stat-change positive">+8.1% من الشهر الماضي</div>
             </div>
             
             <div class="stat-card">
+              <div class="stat-icon">
+                <i class="ri-team-line"></i>
+              </div>
               <div class="stat-value">${dashboardData.totalWorkers || 0}</div>
-              <div class="stat-label">Active Workers</div>
-              <div class="stat-change">All departments</div>
+              <div class="stat-label">العمال النشطون</div>
+              <div class="stat-change neutral">جميع الأقسام</div>
             </div>
           </div>
 
-          <!-- Recent Activity -->
-          <div class="dashboard-grid">
-            <div class="card">
-              <div class="card-header">
-                <h3>Recent Transactions</h3>
-                <p style="font-size: 0.875rem; color: var(--muted-foreground);">Latest sales and expenses</p>
+          <!-- Quick Actions -->
+          <div style="margin: 3rem 0;">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--text-primary); font-size: 1.5rem;">خيارات سريعة</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+              <div class="quick-action-btn" onclick="app.loadPage('workers')">
+                <i class="ri-team-line"></i>
+                <span>إدارة العمال</span>
               </div>
-              <div class="card-content">
-                ${(dashboardData.recentTransactions || []).slice(0, 5).map(transaction => `
-                  <div style="display: flex; justify-content: space-between; padding: 0.75rem; margin-bottom: 0.5rem; background: var(--muted); border-radius: var(--radius);">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                      <i class="ri-${transaction.type === 'sale' ? 'shopping-cart' : 'money-dollar-circle'}-line" style="color: var(--${transaction.type === 'sale' ? 'accent' : 'destructive'});"></i>
-                      <div>
-                        <div style="font-weight: 500; font-size: 0.875rem;">${transaction.description || 'Transaction'}</div>
-                        <div style="font-size: 0.75rem; color: var(--muted-foreground);">${transaction.date || 'No date'}</div>
-                      </div>
-                    </div>
-                    <div style="font-weight: 600; color: var(--${transaction.type === 'sale' ? 'accent' : 'destructive'});">
-                      ${transaction.type === 'sale' ? '+' : '-'}$${(transaction.amount || 0).toLocaleString()}
-                    </div>
-                  </div>
-                `).join('') || '<p style="color: var(--muted-foreground);">No recent transactions</p>'}
+              <div class="quick-action-btn" onclick="app.loadPage('sales')">
+                <i class="ri-shopping-cart-line"></i>
+                <span>المبيعات</span>
               </div>
-            </div>
-            
-            <div class="card">
-              <div class="card-header">
-                <h3>Quick Actions</h3>
-                <p style="font-size: 0.875rem; color: var(--muted-foreground);">Common tasks</p>
+              <div class="quick-action-btn" onclick="app.loadPage('storage')">
+                <i class="ri-box-line"></i>
+                <span>المخزون</span>
               </div>
-              <div class="card-content">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                  <button onclick="app.loadPage('workers')" class="btn btn-primary" style="text-align: left; padding: 1rem;">
-                    <i class="ri-team-line" style="display: block; margin-bottom: 0.5rem;"></i>
-                    <span style="font-size: 0.875rem;">Manage Workers</span>
-                  </button>
-                  <button onclick="app.loadPage('sales')" class="btn btn-secondary" style="text-align: left; padding: 1rem;">
-                    <i class="ri-shopping-cart-line" style="display: block; margin-bottom: 0.5rem;"></i>
-                    <span style="font-size: 0.875rem;">Record Sale</span>
-                  </button>
-                  <button onclick="app.loadPage('storage')" class="btn btn-secondary" style="text-align: left; padding: 1rem;">
-                    <i class="ri-box-line" style="display: block; margin-bottom: 0.5rem;"></i>
-                    <span style="font-size: 0.875rem;">Check Storage</span>
-                  </button>
-                  <button onclick="app.loadPage('expenses')" class="btn btn-secondary" style="text-align: left; padding: 1rem;">
-                    <i class="ri-money-dollar-circle-line" style="display: block; margin-bottom: 0.5rem;"></i>
-                    <span style="font-size: 0.875rem;">Add Expense</span>
-                  </button>
-                </div>
+              <div class="quick-action-btn" onclick="app.loadPage('expenses')">
+                <i class="ri-money-dollar-circle-line"></i>
+                <span>المصروفات</span>
+              </div>
+              <div class="quick-action-btn" onclick="app.loadPage('reports')">
+                <i class="ri-file-chart-line"></i>
+                <span>التقارير</span>
+              </div>
+              <div class="quick-action-btn" onclick="app.loadPage('activity-logs')">
+                <i class="ri-file-list-line"></i>
+                <span>سجل النشاطات</span>
               </div>
             </div>
           </div>
+
+          <!-- Recent Activity Section -->
+          <div class="card">
+            <div class="card-header">
+              <h3>آخر النشاطات</h3>
+            </div>
+            <div class="card-content">
+              ${(dashboardData.recentTransactions || []).slice(0, 5).map(transaction => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; margin-bottom: 0.5rem; background: var(--bg-accent); border-radius: 8px; border-left: 4px solid ${transaction.type === 'sale' ? 'var(--primary-green)' : 'var(--brown-dark)'};">
+                  <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 40px; height: 40px; background: ${transaction.type === 'sale' ? 'var(--primary-green-light)' : 'var(--brown-light)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                      <i class="ri-${transaction.type === 'sale' ? 'shopping-cart' : 'money-dollar-circle'}-line" style="color: ${transaction.type === 'sale' ? 'var(--primary-green)' : 'var(--brown-dark)'};"></i>
+                    </div>
+                    <div>
+                      <div style="font-weight: 600; color: var(--text-primary);">${transaction.description || 'معاملة'}</div>
+                      <div style="font-size: 0.85rem; color: var(--text-secondary);">${transaction.date || 'اليوم'}</div>
+                    </div>
+                  </div>
+                  <div style="font-weight: 700; font-size: 1.1rem; color: ${transaction.type === 'sale' ? 'var(--primary-green)' : 'var(--error)'};">
+                    ${transaction.type === 'sale' ? '+' : '-'}$${(transaction.amount || 0).toLocaleString()}
+                  </div>
+                </div>
+              `).join('') || '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">لا توجد معاملات حديثة</p>'}
+            </div>
+          </div>
+
+          <!-- Performance Overview -->
+          <div class="card" style="margin-top: 2rem; background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark)); color: white;">
+            <div class="card-content" style="text-align: center; padding: 2rem;">
+              <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem;">نظرة عامة على الأداء</h3>
+              <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">تم تحديث البيانات بنجاح ونظام إدارة المصنع يعمل بكفاءة عالية</p>
+              <button class="btn" style="margin-top: 1.5rem; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);" onclick="app.loadPage('reports')">
+                عرض التقارير التفصيلية
+              </button>
+            </div>
+          </div>
+        </div>
         </div>
       `;
     } catch (error) {
