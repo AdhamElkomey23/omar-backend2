@@ -56,6 +56,12 @@ try {
     $recentExpensesStmt->execute();
     $recentExpenses = $recentExpensesStmt->fetchAll(PDO::FETCH_ASSOC);
     
+    // Get total workers count
+    $workersQuery = "SELECT COUNT(*) as total_workers FROM workers WHERE status = 'active'";
+    $workersStmt = $db->prepare($workersQuery);
+    $workersStmt->execute();
+    $totalWorkers = $workersStmt->fetch(PDO::FETCH_ASSOC)['total_workers'];
+    
     // Get monthly sales trend (last 6 months)
     $monthlySalesQuery = "SELECT 
         DATE_FORMAT(sale_date, '%Y-%m') as month,
@@ -104,12 +110,38 @@ try {
         ];
     }, $monthlySales);
     
+    // Combine recent transactions for activity feed
+    $recentTransactions = [];
+    foreach ($formattedRecentSales as $sale) {
+        $recentTransactions[] = [
+            'type' => 'sale',
+            'description' => "Sale: {$sale['product']} to {$sale['customerName']}",
+            'amount' => $sale['totalAmount'],
+            'date' => $sale['saleDate']
+        ];
+    }
+    foreach ($formattedRecentExpenses as $expense) {
+        $recentTransactions[] = [
+            'type' => 'expense',
+            'description' => "Expense: {$expense['description']} ({$expense['category']})",
+            'amount' => $expense['amount'],
+            'date' => $expense['expenseDate']
+        ];
+    }
+    
+    // Sort by date descending
+    usort($recentTransactions, function($a, $b) {
+        return strtotime($b['date']) - strtotime($a['date']);
+    });
+    
     $response = [
         'totalIncome' => (float)$totalIncome,
         'totalExpenses' => (float)$totalExpenses,
         'netProfit' => (float)($totalIncome - $totalExpenses),
+        'totalWorkers' => (int)($totalWorkers ?? 0),
         'recentSales' => $formattedRecentSales,
         'recentExpenses' => $formattedRecentExpenses,
+        'recentTransactions' => array_slice($recentTransactions, 0, 10),
         'monthlySales' => $formattedMonthlySales
     ];
     
