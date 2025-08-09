@@ -89,13 +89,13 @@ export default function Sales() {
       });
       if (!response.ok) throw new Error('Failed to add sale');
       
-      // Then deduct quantity from storage (convert to tons)
+      // Then deduct quantity from storage (combine tons and kg)
       await fetch('/api/storage/deduct', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           itemName: values.productName,
-          quantity: convertToTons(values.quantity, values.quantityUnit || "tons")
+          quantity: getTotalQuantityInTons(values.quantityTons || 0, values.quantityKg || 0)
         }),
       });
       
@@ -123,13 +123,13 @@ export default function Sales() {
 
   const deleteSaleMutation = useMutation({
     mutationFn: async (sale: Sale) => {
-      // First add quantity back to storage (convert to tons)
+      // First add quantity back to storage (combine tons and kg)
       const addResponse = await fetch('/api/storage/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           itemName: sale.productName,
-          quantity: convertToTons(sale.quantity, sale.quantityUnit || "tons")
+          quantity: getTotalQuantityInTons(sale.quantityTons, sale.quantityKg)
         }),
       });
       if (!addResponse.ok) {
@@ -163,23 +163,23 @@ export default function Sales() {
 
   const editSaleMutation = useMutation({
     mutationFn: async ({ id, values, originalSale }: { id: number, values: SaleFormValues, originalSale: Sale }) => {
-      // First restore original quantity to storage (convert to tons)
+      // First restore original quantity to storage (combine tons and kg)
       await fetch('/api/storage/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           itemName: originalSale.productName,
-          quantity: convertToTons(originalSale.quantity, originalSale.quantityUnit || "tons")
+          quantity: getTotalQuantityInTons(originalSale.quantityTons, originalSale.quantityKg)
         }),
       });
 
-      // Then deduct new quantity from storage (convert to tons)
+      // Then deduct new quantity from storage (combine tons and kg)
       await fetch('/api/storage/deduct', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           itemName: values.productName,
-          quantity: convertToTons(values.quantity, values.quantityUnit || "tons")
+          quantity: getTotalQuantityInTons(values.quantityTons || 0, values.quantityKg || 0)
         }),
       });
 
@@ -217,8 +217,8 @@ export default function Sales() {
     resolver: zodResolver(saleFormSchema),
     defaultValues: {
       productName: "",
-      quantity: 1,
-      quantityUnit: "tons",
+      quantityTons: 0,
+      quantityKg: 0,
       totalAmount: 0,
       saleDate: new Date(),
       clientName: "",
@@ -273,8 +273,8 @@ export default function Sales() {
               <tbody>
                 <tr>
                   <td>${sale.productName}</td>
-                  <td>${displayQuantity(sale.quantity, sale.quantityUnit || "tons")}</td>
-                  <td>$${(sale.totalAmount / sale.quantity).toFixed(2)}</td>
+                  <td>${displayQuantity(sale.quantityTons, sale.quantityKg)}</td>
+                  <td>$${(sale.totalAmount / getTotalQuantityInTons(sale.quantityTons, sale.quantityKg)).toFixed(2)}</td>
                   <td>$${sale.totalAmount.toFixed(2)}</td>
                 </tr>
               </tbody>
@@ -285,7 +285,7 @@ export default function Sales() {
           ${isMultiple ? `
             <div class="total">
               <h3>Total Sales: $${sales.reduce((sum, sale) => sum + sale.totalAmount, 0).toFixed(2)}</h3>
-              <p>Total Items Sold: ${sales.reduce((sum, sale) => sum + sale.quantity, 0)}</p>
+              <p>Total Items Sold: ${sales.reduce((sum, sale) => sum + getTotalQuantityInTons(sale.quantityTons, sale.quantityKg), 0).toFixed(2)} tons</p>
             </div>
           ` : ''}
         </body>
@@ -304,24 +304,21 @@ export default function Sales() {
     URL.revokeObjectURL(url);
   };
 
-  // Helper function to convert quantity to tons (storage uses tons)
-  const convertToTons = (quantity: number, unit: string) => {
-    if (unit === "kg") {
-      return quantity / 1000;
-    }
-    return quantity; // Already in tons
+  // Helper function to calculate total quantity in tons from both fields
+  const getTotalQuantityInTons = (tons: number, kg: number) => {
+    return tons + (kg / 1000);
   };
 
-  // Helper function to display quantity in both units
-  const displayQuantity = (quantity: number, unit: string) => {
-    if (unit === "tons") {
-      const kg = quantity * 1000;
-      return `${quantity} طن (${kg.toLocaleString()} كيلو)`;
-    } else if (unit === "kg") {
-      const tons = quantity / 1000;
-      return `${quantity.toLocaleString()} كيلو (${tons.toFixed(3)} طن)`;
-    }
-    return `${quantity} ${unit}`;
+  // Helper function to display combined quantity
+  const displayQuantity = (tons: number, kg: number) => {
+    const parts = [];
+    if (tons > 0) parts.push(`${tons} طن`);
+    if (kg > 0) parts.push(`${kg.toLocaleString()} كيلو`);
+    
+    if (parts.length === 0) return "0";
+    if (parts.length === 1) return parts[0];
+    
+    return parts.join(" + ");
   };
 
   // Handle edit form submission
@@ -329,8 +326,8 @@ export default function Sales() {
     setEditingSale(sale);
     form.reset({
       productName: sale.productName,
-      quantity: sale.quantity,
-      quantityUnit: sale.quantityUnit || "tons",
+      quantityTons: sale.quantityTons,
+      quantityKg: sale.quantityKg,
       totalAmount: sale.totalAmount,
       clientName: sale.clientName,
       clientContact: sale.clientContact || '',
@@ -349,7 +346,7 @@ export default function Sales() {
 
   // Calculate summary data
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
-  const totalQuantity = sales.reduce((sum, sale) => sum + sale.quantity, 0);
+  const totalQuantityInTons = sales.reduce((sum, sale) => sum + getTotalQuantityInTons(sale.quantityTons, sale.quantityKg), 0);
   
   // Remove unused variable
   // const salesWithProducts = sales;
@@ -398,52 +395,47 @@ export default function Sales() {
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-2">
-                    <FormField
-                      control={form.control}
-                      name="quantity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('quantity')}</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              min="1"
-                              step="0.01"
-                              placeholder="1" 
-                              {...field}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 1)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="col-span-1">
-                    <FormField
-                      control={form.control}
-                      name="quantityUnit"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>الوحدة</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="tons">طن</SelectItem>
-                              <SelectItem value="kg">كيلو</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="quantityTons"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الكمية بالطن</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="0"
+                            step="0.01"
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="quantityKg"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الكمية بالكيلو</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="0"
+                            step="1"
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <FormField
                   control={form.control}
@@ -540,7 +532,7 @@ export default function Sales() {
             <CardTitle className="text-sm font-medium">الوحدات المباعة</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl md:text-2xl font-bold">{totalQuantity}</div>
+            <div className="text-xl md:text-2xl font-bold">{totalQuantityInTons.toFixed(2)} طن</div>
           </CardContent>
         </Card>
       </div>
@@ -622,7 +614,7 @@ export default function Sales() {
                   <div className="space-y-1 flex-1">
                     <p className="font-medium">{sale.productName}</p>
                     <p className="text-sm text-muted-foreground">
-                      {t('quantity')}: {displayQuantity(sale.quantity, sale.quantityUnit || "tons")} • {format(new Date(sale.saleDate), "MMM dd, yyyy")}
+                      {t('quantity')}: {displayQuantity(sale.quantityTons, sale.quantityKg)} • {format(new Date(sale.saleDate), "MMM dd, yyyy")}
                     </p>
                     <p className="text-sm text-blue-600 font-medium">
                       العميل: {sale.clientName}
@@ -631,7 +623,7 @@ export default function Sales() {
                   <div className="text-left md:text-right md:mr-4">
                     <p className="font-bold text-green-600">${sale.totalAmount.toFixed(2)}</p>
                     <p className="text-sm text-muted-foreground">
-                      ${(sale.totalAmount / sale.quantity).toFixed(2)} للوحدة
+                      ${(sale.totalAmount / getTotalQuantityInTons(sale.quantityTons, sale.quantityKg)).toFixed(2)} للطن
                     </p>
                   </div>
                   <div className="flex items-center gap-2 justify-start md:justify-end">
@@ -665,7 +657,7 @@ export default function Sales() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>حذف المبيعة</AlertDialogTitle>
                           <AlertDialogDescription>
-                            هل أنت متأكد من حذف هذه المبيعة؟ سيتم إرجاع {displayQuantity(sale.quantity, sale.quantityUnit || "tons")} من {sale.productName} إلى المخزون.
+                            هل أنت متأكد من حذف هذه المبيعة؟ سيتم إرجاع {displayQuantity(sale.quantityTons, sale.quantityKg)} من {sale.productName} إلى المخزون.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -723,51 +715,47 @@ export default function Sales() {
                 )}
               />
 
-              <div className="grid grid-cols-3 gap-2">
-                <div className="col-span-2">
-                  <FormField
-                    control={form.control}
-                    name="quantity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('quantity')}</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            step="0.01"
-                            placeholder="أدخل الكمية" 
-                            {...field}
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-1">
-                  <FormField
-                    control={form.control}
-                    name="quantityUnit"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>الوحدة</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="tons">طن</SelectItem>
-                            <SelectItem value="kg">كيلو</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="quantityTons"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>الكمية بالطن</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0"
+                          step="0.01"
+                          placeholder="0" 
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="quantityKg"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>الكمية بالكيلو</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0"
+                          step="1"
+                          placeholder="0" 
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <FormField
