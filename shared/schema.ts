@@ -35,6 +35,7 @@ export const sales = pgTable("sales", {
   id: serial("id").primaryKey(),
   productName: text("product_name").notNull(), // Changed from productId to productName
   quantity: integer("quantity").notNull(),
+  quantityUnit: text("quantity_unit").notNull().default("tons"), // "tons" or "kg"
   totalAmount: doublePrecision("total_amount").notNull(),
   saleDate: date("sale_date").notNull(),
   clientName: text("client_name").notNull(),
@@ -49,6 +50,7 @@ export type Sale = {
   id: number;
   productName: string; // Changed from productId to productName
   quantity: number;
+  quantityUnit: string; // "tons" or "kg"
   totalAmount: number;
   saleDate: Date;
   clientName: string;
