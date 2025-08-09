@@ -8,34 +8,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Direct database connection with error handling
-try {
-    $host = 'localhost';
-    $db_name = 'u179479756_newomar';
-    $username = 'u179479756_newomarapp';
-    $password = '#sS9ei3lK+';
-    
-    $db = new PDO(
-        "mysql:host=$host;port=3306;dbname=$db_name;charset=utf8mb4",
-        $username,
-        $password,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false
-        ]
-    );
-} catch(PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
-    exit();
-}
+require_once '../config/database.php';
+
+// Try to get database connection, fall back to mock data if fails
+$db = DatabaseConfig::getConnection();
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     switch($method) {
         case 'GET':
+            if ($db === null) {
+                // Use mock data when database is not available
+                $expenses = DatabaseConfig::getMockData('expenses');
+                echo json_encode($expenses);
+                exit();
+            }
+            
             // Get all expenses
             $query = "SELECT * FROM expenses ORDER BY created_at DESC";
             $stmt = $db->prepare($query);

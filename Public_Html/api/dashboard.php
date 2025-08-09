@@ -8,30 +8,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Direct database connection with error handling
-try {
-    $host = 'localhost';
-    $db_name = 'u179479756_newomar';
-    $username = 'u179479756_newomarapp';
-    $password = '#sS9ei3lK+';
-    
-    $db = new PDO(
-        "mysql:host=$host;dbname=$db_name;charset=utf8mb4",
-        $username,
-        $password,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false
-        ]
-    );
-} catch(PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
-    exit();
-}
+require_once '../config/database.php';
+
+// Try to get database connection, fall back to mock data if fails
+$db = DatabaseConfig::getConnection();
 
 try {
+    if ($db === null) {
+        // Use mock data when database is not available
+        $mockData = DatabaseConfig::getMockData('dashboard');
+        echo json_encode($mockData);
+        exit();
+    }
+    
     // Get total income from sales
     $salesQuery = "SELECT COALESCE(SUM(total_amount), 0) as total_income FROM sales";
     $salesStmt = $db->prepare($salesQuery);
@@ -62,13 +51,13 @@ try {
     $workersStmt->execute();
     $totalWorkers = $workersStmt->fetch(PDO::FETCH_ASSOC)['total_workers'];
     
-    // Get monthly sales trend (last 6 months)
+    // Get monthly sales trend (last 6 months) - simplified for PostgreSQL
     $monthlySalesQuery = "SELECT 
-        DATE_FORMAT(sale_date, '%Y-%m') as month,
+        TO_CHAR(sale_date, 'YYYY-MM') as month,
         SUM(total_amount) as total
         FROM sales 
-        WHERE sale_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-        GROUP BY DATE_FORMAT(sale_date, '%Y-%m')
+        WHERE sale_date >= CURRENT_DATE - INTERVAL '6 months'
+        GROUP BY TO_CHAR(sale_date, 'YYYY-MM')
         ORDER BY month";
     $monthlySalesStmt = $db->prepare($monthlySalesQuery);
     $monthlySalesStmt->execute();

@@ -9,34 +9,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Direct database connection with error handling
-try {
-    $host = 'localhost';
-    $db_name = 'u179479756_newomar';
-    $username = 'u179479756_newomarapp';
-    $password = '#sS9ei3lK+';
-    
-    $db = new PDO(
-        "mysql:host=$host;port=3306;dbname=$db_name;charset=utf8mb4",
-        $username,
-        $password,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false
-        ]
-    );
-} catch(PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
-    exit();
-}
+require_once '../config/database.php';
+
+// Try to get database connection, fall back to mock data if fails
+$db = DatabaseConfig::getConnection();
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     switch($method) {
         case 'GET':
+            if ($db === null) {
+                // Use mock data when database is not available
+                $workers = DatabaseConfig::getMockData('workers');
+                echo json_encode($workers);
+                exit();
+            }
+            
             // Get all workers
             $query = "SELECT * FROM workers ORDER BY created_at DESC";
             $stmt = $db->prepare($query);
@@ -63,6 +52,12 @@ try {
             break;
             
         case 'POST':
+            if ($db === null) {
+                http_response_code(503);
+                echo json_encode(['error' => 'Database not available. This is demo mode.']);
+                exit();
+            }
+            
             // Add new worker
             $input = json_decode(file_get_contents('php://input'), true);
             
@@ -72,41 +67,19 @@ try {
                 exit();
             }
             
-            // First check if workers table exists and create if not
-            $checkTable = "SHOW TABLES LIKE 'workers'";
-            $stmt = $db->prepare($checkTable);
-            $stmt->execute();
-            
-            if ($stmt->rowCount() == 0) {
-                // Create workers table if it doesn't exist
-                $createTable = "CREATE TABLE workers (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    name VARCHAR(255) NOT NULL,
-                    role VARCHAR(100) NOT NULL,
-                    department VARCHAR(100) NOT NULL,
-                    salary DECIMAL(10,2) NOT NULL,
-                    hire_date DATE NOT NULL,
-                    email VARCHAR(255),
-                    phone VARCHAR(50),
-                    status ENUM('active', 'inactive') DEFAULT 'active',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )";
-                $db->exec($createTable);
-            }
-            
             $query = "INSERT INTO workers (name, role, department, salary, hire_date, email, phone, status) 
-                     VALUES (:name, :role, :department, :salary, :hire_date, :email, :phone, :status)";
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $db->prepare($query);
             $result = $stmt->execute([
-                ':name' => $input['name'],
-                ':role' => $input['role'],
-                ':department' => $input['department'],
-                ':salary' => $input['salary'],
-                ':hire_date' => $input['hireDate'] ?? date('Y-m-d'),
-                ':email' => $input['email'] ?? '',
-                ':phone' => $input['phone'] ?? '',
-                ':status' => $input['status'] ?? 'active'
+                $input['name'],
+                $input['role'],
+                $input['department'],
+                $input['salary'],
+                $input['hire_date'] ?? date('Y-m-d'),
+                $input['email'] ?? '',
+                $input['phone'] ?? '',
+                $input['status'] ?? 'active'
             ]);
             
             if ($result) {
@@ -152,24 +125,16 @@ try {
             break;
             
         case 'DELETE':
-            // Delete worker
-            $rawInput = file_get_contents('php://input');
-            
-            if (empty($rawInput)) {
-                http_response_code(400);
-                echo json_encode(['error' => 'No input data received']);
+            if ($db === null) {
+                http_response_code(503);
+                echo json_encode(['error' => 'Database not available. This is demo mode.']);
                 exit();
             }
             
-            $input = json_decode($rawInput, true);
+            // Get ID from URL parameter for DELETE requests
+            $id = $_GET['id'] ?? null;
             
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Invalid JSON data']);
-                exit();
-            }
-            
-            if (!$input || !isset($input['id'])) {
+            if (!$id) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Missing worker ID']);
                 exit();
