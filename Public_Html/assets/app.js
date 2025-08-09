@@ -27,21 +27,21 @@ class FactoryManagementApp {
     const overlay = document.getElementById('mobile-menu-overlay');
 
     mobileMenuBtn?.addEventListener('click', () => {
-      sidebar.classList.toggle('-translate-x-full');
-      overlay.classList.toggle('hidden');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
     });
 
     overlay?.addEventListener('click', () => {
-      sidebar.classList.add('-translate-x-full');
-      overlay.classList.add('hidden');
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
     });
 
     // Close mobile menu on navigation
     document.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', () => {
         if (window.innerWidth < 1024) {
-          sidebar.classList.add('-translate-x-full');
-          overlay.classList.add('hidden');
+          sidebar.classList.remove('open');
+          overlay.classList.remove('show');
         }
       });
     });
@@ -101,80 +101,88 @@ class FactoryManagementApp {
       const dashboardData = await this.apiRequest('/dashboard.php');
       
       return `
-        <div class="space-y-6">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-            <h1 class="font-heading text-3xl font-bold tracking-tight">Dashboard</h1>
+        <div>
+          <div class="card-header">
+            <h1>Dashboard</h1>
           </div>
 
           <!-- Stats Cards -->
-          <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div class="card p-6">
-              <div class="flex items-center justify-between space-y-0 pb-2">
-                <h3 class="text-sm font-medium">Total Revenue</h3>
-                <i class="ri-money-dollar-circle-line text-muted-foreground"></i>
-              </div>
-              <div class="text-2xl font-bold">$${(dashboardData.totalIncome || 0).toLocaleString()}</div>
-              <p class="text-xs text-muted-foreground">+20.1% from last month</p>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">$${(dashboardData.totalIncome || 0).toLocaleString()}</div>
+              <div class="stat-label">Total Revenue</div>
+              <div class="stat-change positive">+20.1% from last month</div>
             </div>
             
-            <div class="card p-6">
-              <div class="flex items-center justify-between space-y-0 pb-2">
-                <h3 class="text-sm font-medium">Total Expenses</h3>
-                <i class="ri-shopping-cart-line text-muted-foreground"></i>
-              </div>
-              <div class="text-2xl font-bold">$${(dashboardData.totalExpenses || 0).toLocaleString()}</div>
-              <p class="text-xs text-muted-foreground">+12% from last month</p>
+            <div class="stat-card">
+              <div class="stat-value">$${(dashboardData.totalExpenses || 0).toLocaleString()}</div>
+              <div class="stat-label">Total Expenses</div>
+              <div class="stat-change negative">+12% from last month</div>
             </div>
             
-            <div class="card p-6">
-              <div class="flex items-center justify-between space-y-0 pb-2">
-                <h3 class="text-sm font-medium">Net Profit</h3>
-                <i class="ri-trending-up-line text-muted-foreground"></i>
-              </div>
-              <div class="text-2xl font-bold">$${((dashboardData.totalIncome || 0) - (dashboardData.totalExpenses || 0)).toLocaleString()}</div>
-              <p class="text-xs text-muted-foreground">+8.1% from last month</p>
+            <div class="stat-card">
+              <div class="stat-value">$${((dashboardData.totalIncome || 0) - (dashboardData.totalExpenses || 0)).toLocaleString()}</div>
+              <div class="stat-label">Net Profit</div>
+              <div class="stat-change positive">+8.1% from last month</div>
             </div>
             
-            <div class="card p-6">
-              <div class="flex items-center justify-between space-y-0 pb-2">
-                <h3 class="text-sm font-medium">Active Workers</h3>
-                <i class="ri-team-line text-muted-foreground"></i>
-              </div>
-              <div class="text-2xl font-bold">${dashboardData.totalWorkers || 0}</div>
-              <p class="text-xs text-muted-foreground">No change</p>
-            </div>
-          </div>
-
-          <!-- Charts Section -->
-          <div class="grid gap-6 md:grid-cols-2">
-            <div class="card p-6">
-              <h3 class="font-heading text-lg font-semibold mb-4">Sales Overview</h3>
-              <div class="chart-container" id="sales-chart">
-                <canvas id="salesCanvas" width="400" height="200"></canvas>
-              </div>
-            </div>
-            
-            <div class="card p-6">
-              <h3 class="font-heading text-lg font-semibold mb-4">Expenses Breakdown</h3>
-              <div class="chart-container" id="expenses-chart">
-                <canvas id="expensesCanvas" width="400" height="200"></canvas>
-              </div>
+            <div class="stat-card">
+              <div class="stat-value">${dashboardData.totalWorkers || 0}</div>
+              <div class="stat-label">Active Workers</div>
+              <div class="stat-change">All departments</div>
             </div>
           </div>
 
           <!-- Recent Activity -->
-          <div class="card p-6">
-            <h3 class="font-heading text-lg font-semibold mb-4">Recent Activity</h3>
-            <div class="space-y-4" id="recent-activity">
-              ${(dashboardData.recentTransactions || []).slice(0, 5).map(transaction => `
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-2 h-2 bg-primary rounded-full"></div>
-                    <span class="text-sm">${transaction.description || 'Transaction'}</span>
+          <div class="dashboard-grid">
+            <div class="card">
+              <div class="card-header">
+                <h3>Recent Transactions</h3>
+                <p style="font-size: 0.875rem; color: var(--muted-foreground);">Latest sales and expenses</p>
+              </div>
+              <div class="card-content">
+                ${(dashboardData.recentTransactions || []).slice(0, 5).map(transaction => `
+                  <div style="display: flex; justify-content: space-between; padding: 0.75rem; margin-bottom: 0.5rem; background: var(--muted); border-radius: var(--radius);">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                      <i class="ri-${transaction.type === 'sale' ? 'shopping-cart' : 'money-dollar-circle'}-line" style="color: var(--${transaction.type === 'sale' ? 'accent' : 'destructive'});"></i>
+                      <div>
+                        <div style="font-weight: 500; font-size: 0.875rem;">${transaction.description || 'Transaction'}</div>
+                        <div style="font-size: 0.75rem; color: var(--muted-foreground);">${transaction.date || 'No date'}</div>
+                      </div>
+                    </div>
+                    <div style="font-weight: 600; color: var(--${transaction.type === 'sale' ? 'accent' : 'destructive'});">
+                      ${transaction.type === 'sale' ? '+' : '-'}$${(transaction.amount || 0).toLocaleString()}
+                    </div>
                   </div>
-                  <span class="text-sm font-medium">$${(transaction.amount || 0).toLocaleString()}</span>
+                `).join('') || '<p style="color: var(--muted-foreground);">No recent transactions</p>'}
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <h3>Quick Actions</h3>
+                <p style="font-size: 0.875rem; color: var(--muted-foreground);">Common tasks</p>
+              </div>
+              <div class="card-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                  <button onclick="app.loadPage('workers')" class="btn btn-primary" style="text-align: left; padding: 1rem;">
+                    <i class="ri-team-line" style="display: block; margin-bottom: 0.5rem;"></i>
+                    <span style="font-size: 0.875rem;">Manage Workers</span>
+                  </button>
+                  <button onclick="app.loadPage('sales')" class="btn btn-secondary" style="text-align: left; padding: 1rem;">
+                    <i class="ri-shopping-cart-line" style="display: block; margin-bottom: 0.5rem;"></i>
+                    <span style="font-size: 0.875rem;">Record Sale</span>
+                  </button>
+                  <button onclick="app.loadPage('storage')" class="btn btn-secondary" style="text-align: left; padding: 1rem;">
+                    <i class="ri-box-line" style="display: block; margin-bottom: 0.5rem;"></i>
+                    <span style="font-size: 0.875rem;">Check Storage</span>
+                  </button>
+                  <button onclick="app.loadPage('expenses')" class="btn btn-secondary" style="text-align: left; padding: 1rem;">
+                    <i class="ri-money-dollar-circle-line" style="display: block; margin-bottom: 0.5rem;"></i>
+                    <span style="font-size: 0.875rem;">Add Expense</span>
+                  </button>
                 </div>
-              `).join('') || '<p class="text-muted-foreground">No recent activity</p>'}
+              </div>
             </div>
           </div>
         </div>

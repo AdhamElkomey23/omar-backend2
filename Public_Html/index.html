@@ -17,57 +17,56 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/3.4.1/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/styles.css">
   </head>
-  <body class="font-body antialiased bg-background text-foreground min-h-screen">
+  <body>
     <!-- Mobile Menu Toggle -->
-    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    <div id="mobile-menu-overlay" class="mobile-overlay"></div>
     
     <!-- Sidebar -->
-    <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-sidebar-background border-r border-sidebar-border z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
-      <div class="p-6 border-b border-sidebar-border">
-        <h1 class="font-heading text-xl font-bold text-sidebar-foreground">Al-Wasiloon</h1>
-        <p class="text-sm text-sidebar-foreground/80">Factory Management</p>
+    <div id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <h1>Al-Wasiloon</h1>
+        <p>Factory Management</p>
       </div>
       
-      <nav class="p-4 space-y-2">
-        <a href="#" data-page="dashboard" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground transition-colors">
-          <i class="ri-dashboard-line text-lg"></i>
+      <nav class="sidebar-nav">
+        <a href="#" data-page="dashboard" class="nav-link">
+          <i class="ri-dashboard-line"></i>
           <span>Dashboard</span>
         </a>
-        <a href="#" data-page="workers" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground transition-colors">
-          <i class="ri-team-line text-lg"></i>
+        <a href="#" data-page="workers" class="nav-link">
+          <i class="ri-team-line"></i>
           <span>Workers</span>
         </a>
-        <a href="#" data-page="sales" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground transition-colors">
-          <i class="ri-shopping-cart-line text-lg"></i>
+        <a href="#" data-page="sales" class="nav-link">
+          <i class="ri-shopping-cart-line"></i>
           <span>Sales</span>
         </a>
-        <a href="#" data-page="storage" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground transition-colors">
-          <i class="ri-box-line text-lg"></i>
+        <a href="#" data-page="storage" class="nav-link">
+          <i class="ri-box-line"></i>
           <span>Storage</span>
         </a>
-        <a href="#" data-page="expenses" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground transition-colors">
-          <i class="ri-money-dollar-circle-line text-lg"></i>
+        <a href="#" data-page="expenses" class="nav-link">
+          <i class="ri-money-dollar-circle-line"></i>
           <span>Expenses</span>
         </a>
-        <a href="#" data-page="reports" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground transition-colors">
-          <i class="ri-file-chart-line text-lg"></i>
+        <a href="#" data-page="reports" class="nav-link">
+          <i class="ri-file-chart-line"></i>
           <span>Reports</span>
         </a>
-        <a href="#" data-page="activity-logs" class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground transition-colors">
-          <i class="ri-file-list-line text-lg"></i>
+        <a href="#" data-page="activity-logs" class="nav-link">
+          <i class="ri-file-list-line"></i>
           <span>Activity Logs</span>
         </a>
       </nav>
     </div>
 
     <!-- Mobile Menu Button -->
-    <button id="mobile-menu-btn" class="lg:hidden fixed top-4 left-4 z-60 bg-sidebar-primary text-sidebar-primary-foreground p-2 rounded-lg">
-      <i class="ri-menu-line text-xl"></i>
+    <button id="mobile-menu-btn" class="mobile-menu-btn">
+      <i class="ri-menu-line"></i>
     </button>
 
     <!-- Main Content -->
-    <main class="lg:ml-64 min-h-screen">
-      <div class="p-4 md:p-6 lg:p-8">
+    <main class="main-content">
         <!-- Loading indicator -->
         <div id="loading-indicator" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div class="bg-white rounded-lg p-6 flex items-center gap-3">
