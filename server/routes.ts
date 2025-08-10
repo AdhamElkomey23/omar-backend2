@@ -54,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(newProduct);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid product data", errors: error.errors });
+        return res.status(400).json({ message: "Invalid product data", errors: error.issues });
       }
       res.status(500).json({ message: "Failed to create product" });
     }
@@ -78,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedProduct);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid product data", errors: error.errors });
+        return res.status(400).json({ message: "Invalid product data", errors: error.issues });
       }
       res.status(500).json({ message: "Failed to update product" });
     }
@@ -147,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(newSale);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid sale data", errors: error.errors });
+        return res.status(400).json({ message: "Invalid sale data", errors: error.issues });
       }
       res.status(500).json({ message: "Failed to create sale" });
     }
@@ -171,7 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedSale);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid sale data", errors: error.errors });
+        return res.status(400).json({ message: "Invalid sale data", errors: error.issues });
       }
       res.status(500).json({ message: "Failed to update sale" });
     }
@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(newExpense);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid expense data", errors: error.errors });
+        return res.status(400).json({ message: "Invalid expense data", errors: error.issues });
       }
       res.status(500).json({ message: "Failed to create expense" });
     }
@@ -290,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(newLog);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid activity log data", errors: error.errors });
+        return res.status(400).json({ message: "Invalid activity log data", errors: error.issues });
       }
       res.status(500).json({ message: "Failed to create activity log" });
     }
