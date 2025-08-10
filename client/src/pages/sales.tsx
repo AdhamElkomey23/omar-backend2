@@ -55,7 +55,7 @@ export default function Sales() {
   const { data: storageItems = [] } = useQuery({
     queryKey: ['/api/storage'],
     queryFn: async () => {
-      const response = await fetch('/api/storage');
+      const response = await fetch(`/api/storage?_t=${Date.now()}`);
       if (!response.ok) throw new Error('Failed to fetch storage items');
       return response.json() as Promise<StorageItem[]>;
     }
@@ -63,7 +63,10 @@ export default function Sales() {
 
   // Group storage items by material and calculate total available quantities, only include items with quantity > 0
   const availableProducts = storageItems
-    .filter(item => item.quantityInTons > 0) // Only include items with available quantity
+    .filter(item => {
+      console.log(`Filtering ${item.itemName}: quantity = ${item.quantityInTons}`);
+      return item.quantityInTons > 0;
+    }) // Only include items with available quantity
     .reduce((acc, item) => {
       const existing = acc.find(p => p.itemName === item.itemName);
       if (existing) {
@@ -79,6 +82,8 @@ export default function Sales() {
       }
       return acc;
     }, [] as Array<{itemName: string, totalQuantity: number, avgPrice: number, storageItems: StorageItem[]}>);
+  
+  console.log('Available products for sales:', availableProducts);
 
   const addSaleMutation = useMutation({
     mutationFn: async (values: SaleFormValues) => {
