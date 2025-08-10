@@ -159,8 +159,8 @@ export class MemStorage implements IStorage {
     this.attendanceCounter = 1;
     this.salaryDeductionCounter = 1;
     
-    // Load seed data
-    this.loadSeedData();
+    // Load minimal seed data (only user and expenses, NO storage items)
+    this.loadMinimalSeedData();
   }
 
   private loadSeedData() {
@@ -372,6 +372,104 @@ export class MemStorage implements IStorage {
       };
       this.workers.set(newWorker.id, newWorker);
     });
+  }
+
+  private loadMinimalSeedData() {
+    // Sample user
+    const user: User = {
+      id: this.userCounter++,
+      username: 'admin',
+      password: 'admin123' // In a real app, this would be hashed
+    };
+    this.users.set(user.id, user);
+    
+    // Sample expenses only
+    const today = new Date();
+    const sampleExpenses = [
+      { name: 'Electricity Bill', amount: 15000, category: 'Utilities', expenseDate: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000) },
+      { name: 'Worker Salaries', amount: 50000, category: 'Salaries', expenseDate: new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000) },
+      { name: 'Equipment Repair', amount: 8000, category: 'Maintenance', expenseDate: new Date(today.getTime() - 8 * 24 * 60 * 60 * 1000) },
+      { name: 'Raw Materials', amount: 35000, category: 'RawMaterials', expenseDate: new Date(today.getTime() - 12 * 24 * 60 * 60 * 1000) },
+      { name: 'Transportation', amount: 12000, category: 'Transportation', expenseDate: new Date(today.getTime() - 18 * 24 * 60 * 60 * 1000) }
+    ];
+    
+    sampleExpenses.forEach(expense => {
+      const newExpense: Expense = {
+        id: this.expenseCounter++,
+        name: expense.name,
+        amount: expense.amount,
+        category: expense.category,
+        expenseDate: expense.expenseDate,
+        createdAt: new Date()
+      };
+      this.expenses.set(newExpense.id, newExpense);
+    });
+
+    // Sample workers
+    const sampleWorkers = [
+      {
+        name: 'Ahmed Mohamed',
+        position: 'Production Supervisor',
+        department: 'Production',
+        salary: 8000,
+        phone: '+20 100 111 2233',
+        email: 'ahmed.mohamed@alwasiloon.com',
+        hireDate: '2022-03-15'
+      },
+      {
+        name: 'Fatima Ibrahim',
+        position: 'Quality Control Specialist',
+        department: 'QualityControl',
+        salary: 6500,
+        phone: '+20 101 222 3344',
+        email: 'fatima.ibrahim@alwasiloon.com',
+        hireDate: '2023-01-10'
+      },
+      {
+        name: 'Mohamed Hassan',
+        position: 'Machine Operator',
+        department: 'Production',
+        salary: 5500,
+        phone: '+20 102 333 4455',
+        email: 'mohamed.hassan@alwasiloon.com',
+        hireDate: '2021-11-20'
+      },
+      {
+        name: 'Amira Ali',
+        position: 'Storage Manager',
+        department: 'Storage',
+        salary: 7000,
+        phone: '+20 103 444 5566',
+        email: 'amira.ali@alwasiloon.com',
+        hireDate: '2022-07-08'
+      },
+      {
+        name: 'Khaled Mahmoud',
+        position: 'Maintenance Technician',
+        department: 'Maintenance',
+        salary: 6000,
+        phone: '+20 104 555 6677',
+        email: 'khaled.mahmoud@alwasiloon.com',
+        hireDate: '2023-05-22'
+      }
+    ];
+
+    sampleWorkers.forEach(worker => {
+      const newWorker: Worker = {
+        id: this.workerCounter++,
+        name: worker.name,
+        position: worker.position,
+        department: worker.department,
+        salary: worker.salary,
+        phone: worker.phone,
+        email: worker.email,
+        hireDate: worker.hireDate,
+        createdAt: new Date()
+      };
+      this.workers.set(newWorker.id, newWorker);
+    });
+
+    // NO STORAGE ITEMS - Storage will be completely empty until user adds items manually
   }
 
   // Product Methods
