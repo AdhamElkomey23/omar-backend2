@@ -219,7 +219,8 @@ export class MemStorage implements IStorage {
       const newSale: Sale = {
         id: this.saleCounter++,
         productName: productNames[index % productNames.length],
-        quantity: sale.quantity,
+        quantityTons: Math.floor(sale.quantity),
+        quantityKg: (sale.quantity % 1) * 1000,
         totalAmount: sale.totalAmount,
         saleDate: sale.saleDate,
         clientName: client.name,
@@ -466,7 +467,8 @@ export class MemStorage implements IStorage {
     this.sales.set(id, sale);
     
     // Deduct from storage items if available (fallback approach since product names may not match storage item names)
-    await this.deductStorageQuantity(sale.productName, sale.quantity);
+    const totalQuantity = sale.quantityTons + (sale.quantityKg / 1000);
+    await this.deductStorageQuantity(sale.productName, totalQuantity);
     
     return sale;
   }
