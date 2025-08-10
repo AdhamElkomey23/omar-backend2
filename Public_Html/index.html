@@ -1,105 +1,191 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Al-Wasiloon Fertilizer Factory Management</title>
-    <meta name="description" content="Complete factory management system for Al-Wasiloon Fertilizer Factory. Manage workers, storage, sales, expenses, and track performance with real-time data." />
-    <!-- Open Graph Tags -->
-    <meta property="og:title" content="Al-Wasiloon Fertilizer Factory Management" />
-    <meta property="og:description" content="Professional factory management system for worker management, inventory tracking, sales monitoring, and expense control." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://pixabay.com/get/g07d8d65a863488ad1814b6e221cbd13df944fcef45df256593a661acfba385b7e4912d5c659ea57d8c0e66b721e582f53751e6d6dfdae6d5d77e8f40f8e66f12_1280.jpg" />
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الواصلون للتعدين والصناعات الكيماوية - لوحة التحكم</title>
+    <meta name="description" content="نظام إدارة شامل لشركة الواصلون للتعدين والصناعات الكيماوية - إدارة المبيعات والمخزون والعمال والمصروفات">
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Nunito+Sans:wght@300;400;600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/3.4.1/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/styles.css">
-  </head>
-  <body>
-    <div class="app-layout">
-      <!-- Mobile Menu Overlay -->
-      <div id="mobile-menu-overlay" class="mobile-overlay"></div>
-      
-      <!-- Sidebar -->
-      <div id="sidebar" class="sidebar">
-        <div class="sidebar-header">
-          <h1>الواسطون</h1>
-          <p>نظام إدارة المصنع</p>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-cairo">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-industry text-white text-sm"></i>
+                        </div>
+                        <span class="mr-3 text-lg font-semibold text-gray-900">الواصلون</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-reverse space-x-4">
+                    <div class="text-sm text-gray-500" id="currentDate"></div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-amber-600 text-sm"></i>
+                        </div>
+                        <span class="mr-2 text-sm font-medium text-gray-700">المدير</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <nav class="sidebar-nav">
-          <a href="#" data-page="dashboard" class="nav-link">
-            <i class="ri-dashboard-3-line"></i>
-            <span>لوحة التحكم</span>
-          </a>
-          <a href="#" data-page="workers" class="nav-link">
-            <i class="ri-team-line"></i>
-            <span>إدارة العمال</span>
-          </a>
-          <a href="#" data-page="sales" class="nav-link">
-            <i class="ri-shopping-cart-line"></i>
-            <span>المبيعات</span>
-          </a>
-          <a href="#" data-page="storage" class="nav-link">
-            <i class="ri-box-3-line"></i>
-            <span>المخزون</span>
-          </a>
-          <a href="#" data-page="expenses" class="nav-link">
-            <i class="ri-money-dollar-circle-line"></i>
-            <span>المصروفات</span>
-          </a>
-          <a href="#" data-page="reports" class="nav-link">
-            <i class="ri-file-chart-line"></i>
-            <span>التقارير</span>
-          </a>
-          <a href="#" data-page="activity-logs" class="nav-link">
-            <i class="ri-file-list-3-line"></i>
-            <span>سجل النشاطات</span>
-          </a>
-        </nav>
-      </div>
+    </nav>
 
-      <!-- Main Content -->
-      <main class="main-content">
-        <!-- Mobile Menu Button -->
-        <button id="mobile-menu-btn" class="mobile-menu-btn">
-          <i class="ri-menu-line"></i>
-        </button>
-
-        <!-- Loading indicator -->
-        <div id="loading-indicator" class="modal-overlay">
-          <div style="background: white; border-radius: 12px; padding: 2rem; display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-lg);">
-            <div style="width: 24px; height: 24px; border: 3px solid var(--border-color); border-top: 3px solid var(--primary-green); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-            <span style="color: var(--text-primary); font-weight: 500;">جاري التحميل...</span>
-          </div>
-        </div>
-
-        <!-- Error message -->
-        <div id="error-message" style="display: none; position: fixed; top: 20px; right: 20px; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 1rem; border-radius: 8px; z-index: 1000; box-shadow: var(--shadow-md);">
-          <span id="error-text"></span>
+    <div class="flex h-screen bg-gray-50">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-sm">
+            <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">القائمة الرئيسية</h2>
+                <nav class="space-y-2">
+                    <a href="index.html" class="flex items-center px-4 py-2 text-amber-600 bg-amber-50 rounded-lg">
+                        <i class="fas fa-tachometer-alt ml-3"></i>
+                        لوحة التحكم
+                    </a>
+                    <a href="sales.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-chart-line ml-3"></i>
+                        المبيعات
+                    </a>
+                    <a href="storage.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-warehouse ml-3"></i>
+                        إدارة المخزون
+                    </a>
+                    <a href="workers.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-users ml-3"></i>
+                        العمال
+                    </a>
+                    <a href="expenses.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-receipt ml-3"></i>
+                        المصروفات
+                    </a>
+                    <a href="reports.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-chart-bar ml-3"></i>
+                        التقارير
+                    </a>
+                </nav>
+            </div>
         </div>
 
-        <!-- Success message -->
-        <div id="success-message" style="display: none; position: fixed; top: 20px; right: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1rem; border-radius: 8px; z-index: 1000; box-shadow: var(--shadow-md);">
-          <span id="success-text"></span>
-        </div>
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <div class="p-6">
+                <!-- Header -->
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">لوحة التحكم</h1>
+                    <p class="text-gray-600">مرحباً بك في نظام إدارة الواصلون للتعدين والصناعات الكيماوية</p>
+                </div>
 
-        <!-- Page content will be loaded here -->
-        <div id="page-content">
-          <!-- Dashboard will be loaded by default -->
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="fas fa-dollar-sign text-green-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">إجمالي الإيرادات</p>
+                                <p class="text-2xl font-bold text-gray-900" id="totalIncome">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-red-100 rounded-lg">
+                                <i class="fas fa-credit-card text-red-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">إجمالي المصروفات</p>
+                                <p class="text-2xl font-bold text-gray-900" id="totalExpenses">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i class="fas fa-chart-line text-blue-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">صافي الربح</p>
+                                <p class="text-2xl font-bold text-gray-900" id="profit">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i class="fas fa-boxes text-purple-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">عناصر المخزون</p>
+                                <p class="text-2xl font-bold text-gray-900" id="storageItems">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Recent Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Recent Sales -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">المبيعات الأخيرة</h3>
+                        <div class="space-y-4" id="recentSales">
+                            <div class="text-center text-gray-500 py-8">
+                                <i class="fas fa-chart-line text-4xl mb-2"></i>
+                                <p>لا توجد مبيعات حديثة</p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="sales.html" class="text-amber-600 hover:text-amber-700 text-sm font-medium">
+                                عرض جميع المبيعات <i class="fas fa-arrow-left mr-1"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Top Products -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">أهم المنتجات</h3>
+                        <div class="space-y-4" id="topProducts">
+                            <div class="text-center text-gray-500 py-8">
+                                <i class="fas fa-boxes text-4xl mb-2"></i>
+                                <p>لا توجد بيانات متاحة</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="mt-6">
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">النشاطات الأخيرة</h3>
+                        <div class="space-y-4" id="recentActivity">
+                            <div class="text-center text-gray-500 py-8">
+                                <i class="fas fa-clock text-4xl mb-2"></i>
+                                <p>لا توجد أنشطة حديثة</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </main>
     </div>
 
-    <!-- Modals -->
-    <div id="modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div id="modal-content" class="bg-white rounded-lg max-w-md w-full max-h-full overflow-y-auto">
-        <!-- Modal content will be inserted here -->
-      </div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">جاري التحميل...</p>
+        </div>
     </div>
 
-    <script src="assets/app.js"></script>
-  </body>
+    <script src="js/common.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
 </html>

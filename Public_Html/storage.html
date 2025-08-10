@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المخزون - الواصلون للتعدين والصناعات الكيماوية</title>
+    <meta name="description" content="إدارة مخزون الأسمدة والمواد الكيماوية - إضافة وتتبع جميع عناصر المخزون">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-cairo">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-industry text-white text-sm"></i>
+                        </div>
+                        <span class="mr-3 text-lg font-semibold text-gray-900">الواصلون</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-reverse space-x-4">
+                    <div class="text-sm text-gray-500" id="currentDate"></div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-amber-600 text-sm"></i>
+                        </div>
+                        <span class="mr-2 text-sm font-medium text-gray-700">المدير</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex h-screen bg-gray-50">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-sm">
+            <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">القائمة الرئيسية</h2>
+                <nav class="space-y-2">
+                    <a href="index.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-tachometer-alt ml-3"></i>
+                        لوحة التحكم
+                    </a>
+                    <a href="sales.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-chart-line ml-3"></i>
+                        المبيعات
+                    </a>
+                    <a href="storage.html" class="flex items-center px-4 py-2 text-amber-600 bg-amber-50 rounded-lg">
+                        <i class="fas fa-warehouse ml-3"></i>
+                        إدارة المخزون
+                    </a>
+                    <a href="workers.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-users ml-3"></i>
+                        العمال
+                    </a>
+                    <a href="expenses.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-receipt ml-3"></i>
+                        المصروفات
+                    </a>
+                    <a href="reports.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-chart-bar ml-3"></i>
+                        التقارير
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <div class="p-6">
+                <!-- Header -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900 mb-2">إدارة المخزون</h1>
+                            <p class="text-gray-600">إدارة وتتبع جميع المواد الخام والمنتجات في المستودع</p>
+                        </div>
+                        <button onclick="openAddStorageModal()" class="btn btn-primary">
+                            <i class="fas fa-plus ml-2"></i>
+                            إضافة عنصر جديد
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i class="fas fa-boxes text-blue-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">إجمالي الوحدات</p>
+                                <p class="text-2xl font-bold text-gray-900" id="totalUnits">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="fas fa-weight text-green-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">إجمالي الوزن</p>
+                                <p class="text-2xl font-bold text-gray-900" id="totalWeight">0 طن</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i class="fas fa-dollar-sign text-purple-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">القيمة الإجمالية</p>
+                                <p class="text-2xl font-bold text-gray-900" id="totalValue">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">المواد المنخفضة</p>
+                                <p class="text-2xl font-bold text-gray-900" id="lowStockItems">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Storage Table -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-medium text-gray-900">عناصر المخزون</h3>
+                            <div class="flex items-center space-x-reverse space-x-4">
+                                <input type="text" id="searchInput" placeholder="البحث في المخزون..." class="form-input w-64">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>اسم المادة</th>
+                                    <th>الكمية</th>
+                                    <th>سعر الطن</th>
+                                    <th>القيمة الإجمالية</th>
+                                    <th>المورد</th>
+                                    <th>تاريخ الشراء</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="storageTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center py-8">
+                                        <div class="text-gray-500">
+                                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                            <p>جاري تحميل البيانات...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Storage Modal -->
+    <div id="storageModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-2xl">
+            <div class="modal-header">
+                <h3 id="storageModalTitle" class="text-lg font-medium text-gray-900">إضافة عنصر جديد</h3>
+                <button onclick="closeStorageModal()" class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="storageForm" class="modal-body">
+                <input type="hidden" id="storageId" name="id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">اسم المادة *</label>
+                        <input type="text" id="itemName" name="itemName" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">الكمية (طن) *</label>
+                        <input type="number" id="quantityInTons" name="quantityInTons" class="form-input" required min="0" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">سعر الطن *</label>
+                        <input type="number" id="purchasePricePerTon" name="purchasePricePerTon" class="form-input" required min="0" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">اسم المورد *</label>
+                        <input type="text" id="dealerName" name="dealerName" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">رقم المورد</label>
+                        <input type="tel" id="dealerContact" name="dealerContact" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">تاريخ الشراء *</label>
+                        <input type="date" id="purchaseDate" name="purchaseDate" class="form-input" required>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" onclick="closeStorageModal()" class="btn btn-secondary ml-3">
+                        إلغاء
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        حفظ العنصر
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quantity Adjustment Modal -->
+    <div id="quantityModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="quantityModalTitle" class="text-lg font-medium text-gray-900">تعديل الكمية</h3>
+                <button onclick="closeQuantityModal()" class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="quantityForm" class="modal-body">
+                <input type="hidden" id="adjustItemId" name="itemId">
+                
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600 mb-2">المادة: <span id="adjustItemName" class="font-medium"></span></p>
+                    <p class="text-sm text-gray-600">الكمية الحالية: <span id="currentQuantity" class="font-medium"></span> طن</p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">نوع التعديل</label>
+                    <select id="adjustmentType" name="type" class="form-select" required>
+                        <option value="">اختر نوع التعديل</option>
+                        <option value="add">إضافة كمية</option>
+                        <option value="subtract">خصم كمية</option>
+                        <option value="set">تحديد كمية جديدة</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">الكمية (طن) *</label>
+                    <input type="number" id="adjustmentQuantity" name="quantity" class="form-input" required min="0" step="0.01">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">ملاحظات</label>
+                    <textarea id="adjustmentNotes" name="notes" class="form-textarea" rows="3" placeholder="سبب التعديل..."></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" onclick="closeQuantityModal()" class="btn btn-secondary ml-3">
+                        إلغاء
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        تطبيق التعديل
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">جاري التحميل...</p>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/storage.js"></script>
+</body>
+</html>

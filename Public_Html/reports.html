@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقارير - الواصلون للتعدين والصناعات الكيماوية</title>
+    <meta name="description" content="تقارير شاملة عن المبيعات والمصروفات والأرباح والمخزون">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-cairo">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-industry text-white text-sm"></i>
+                        </div>
+                        <span class="mr-3 text-lg font-semibold text-gray-900">الواصلون</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-reverse space-x-4">
+                    <div class="text-sm text-gray-500" id="currentDate"></div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-amber-600 text-sm"></i>
+                        </div>
+                        <span class="mr-2 text-sm font-medium text-gray-700">المدير</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex h-screen bg-gray-50">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-sm">
+            <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">القائمة الرئيسية</h2>
+                <nav class="space-y-2">
+                    <a href="index.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-tachometer-alt ml-3"></i>
+                        لوحة التحكم
+                    </a>
+                    <a href="sales.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-chart-line ml-3"></i>
+                        المبيعات
+                    </a>
+                    <a href="storage.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-warehouse ml-3"></i>
+                        إدارة المخزون
+                    </a>
+                    <a href="workers.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-users ml-3"></i>
+                        العمال
+                    </a>
+                    <a href="expenses.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-receipt ml-3"></i>
+                        المصروفات
+                    </a>
+                    <a href="reports.html" class="flex items-center px-4 py-2 text-amber-600 bg-amber-50 rounded-lg">
+                        <i class="fas fa-chart-bar ml-3"></i>
+                        التقارير
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <div class="p-6">
+                <!-- Header -->
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">التقارير</h1>
+                    <p class="text-gray-600">تقارير شاملة عن أداء الشركة والعمليات</p>
+                </div>
+
+                <!-- Report Categories -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Financial Reports -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="fas fa-dollar-sign text-green-600"></i>
+                            </div>
+                            <h3 class="mr-3 text-lg font-semibold text-gray-900">التقارير المالية</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">تقارير الإيرادات والمصروفات والأرباح</p>
+                        <div class="space-y-2">
+                            <button onclick="generateFinancialReport()" class="btn btn-primary w-full text-sm">
+                                <i class="fas fa-chart-line ml-2"></i>
+                                تقرير مالي شامل
+                            </button>
+                            <button onclick="generateProfitLossReport()" class="btn btn-secondary w-full text-sm">
+                                <i class="fas fa-balance-scale ml-2"></i>
+                                تقرير الربح والخسارة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sales Reports -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i class="fas fa-shopping-cart text-blue-600"></i>
+                            </div>
+                            <h3 class="mr-3 text-lg font-semibold text-gray-900">تقارير المبيعات</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">تحليل المبيعات والعملاء والمنتجات</p>
+                        <div class="space-y-2">
+                            <button onclick="generateSalesReport()" class="btn btn-primary w-full text-sm">
+                                <i class="fas fa-chart-bar ml-2"></i>
+                                تقرير المبيعات الشهري
+                            </button>
+                            <button onclick="generateTopProductsReport()" class="btn btn-secondary w-full text-sm">
+                                <i class="fas fa-star ml-2"></i>
+                                أفضل المنتجات مبيعاً
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Reports -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i class="fas fa-warehouse text-purple-600"></i>
+                            </div>
+                            <h3 class="mr-3 text-lg font-semibold text-gray-900">تقارير المخزون</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">حالة المخزون والمواد المنخفضة</p>
+                        <div class="space-y-2">
+                            <button onclick="generateInventoryReport()" class="btn btn-primary w-full text-sm">
+                                <i class="fas fa-boxes ml-2"></i>
+                                تقرير المخزون الحالي
+                            </button>
+                            <button onclick="generateLowStockReport()" class="btn btn-secondary w-full text-sm">
+                                <i class="fas fa-exclamation-triangle ml-2"></i>
+                                المخزون المنخفض
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Expense Reports -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="p-2 bg-red-100 rounded-lg">
+                                <i class="fas fa-credit-card text-red-600"></i>
+                            </div>
+                            <h3 class="mr-3 text-lg font-semibold text-gray-900">تقارير المصروفات</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">تحليل المصروفات حسب الفئات والأقسام</p>
+                        <div class="space-y-2">
+                            <button onclick="generateExpenseReport()" class="btn btn-primary w-full text-sm">
+                                <i class="fas fa-receipt ml-2"></i>
+                                تقرير المصروفات الشهري
+                            </button>
+                            <button onclick="generateExpenseCategoryReport()" class="btn btn-secondary w-full text-sm">
+                                <i class="fas fa-tags ml-2"></i>
+                                المصروفات حسب الفئة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Employee Reports -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <i class="fas fa-users text-yellow-600"></i>
+                            </div>
+                            <h3 class="mr-3 text-lg font-semibold text-gray-900">تقارير العمال</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">تقارير الرواتب والأقسام والأداء</p>
+                        <div class="space-y-2">
+                            <button onclick="generateEmployeeReport()" class="btn btn-primary w-full text-sm">
+                                <i class="fas fa-id-card ml-2"></i>
+                                تقرير العمال
+                            </button>
+                            <button onclick="generatePayrollReport()" class="btn btn-secondary w-full text-sm">
+                                <i class="fas fa-money-bill ml-2"></i>
+                                تقرير الرواتب
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Reports -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="p-2 bg-gray-100 rounded-lg">
+                                <i class="fas fa-cog text-gray-600"></i>
+                            </div>
+                            <h3 class="mr-3 text-lg font-semibold text-gray-900">تقارير مخصصة</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">تقارير مخصصة حسب فترة زمنية محددة</p>
+                        <div class="space-y-2">
+                            <button onclick="openCustomReportModal()" class="btn btn-primary w-full text-sm">
+                                <i class="fas fa-calendar ml-2"></i>
+                                إنشاء تقرير مخصص
+                            </button>
+                            <button onclick="exportAllData()" class="btn btn-secondary w-full text-sm">
+                                <i class="fas fa-download ml-2"></i>
+                                تصدير جميع البيانات
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Statistics -->
+                <div class="mt-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">إحصائيات سريعة</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-600" id="totalRevenue">0</div>
+                                <div class="text-sm text-gray-600 mt-1">إجمالي الإيرادات</div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-red-600" id="totalExpenses">0</div>
+                                <div class="text-sm text-gray-600 mt-1">إجمالي المصروفات</div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-blue-600" id="netProfit">0</div>
+                                <div class="text-sm text-gray-600 mt-1">صافي الربح</div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-purple-600" id="inventoryValue">0</div>
+                                <div class="text-sm text-gray-600 mt-1">قيمة المخزون</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Report Modal -->
+    <div id="customReportModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-lg font-medium text-gray-900">إنشاء تقرير مخصص</h3>
+                <button onclick="closeCustomReportModal()" class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="customReportForm" class="modal-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">نوع التقرير *</label>
+                        <select id="reportType" name="reportType" class="form-select" required>
+                            <option value="">اختر نوع التقرير</option>
+                            <option value="sales">المبيعات</option>
+                            <option value="expenses">المصروفات</option>
+                            <option value="inventory">المخزون</option>
+                            <option value="financial">مالي</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">الفترة الزمنية *</label>
+                        <select id="reportPeriod" name="reportPeriod" class="form-select" required>
+                            <option value="">اختر الفترة</option>
+                            <option value="today">اليوم</option>
+                            <option value="week">هذا الأسبوع</option>
+                            <option value="month">هذا الشهر</option>
+                            <option value="quarter">هذا الربع</option>
+                            <option value="year">هذا العام</option>
+                            <option value="custom">فترة مخصصة</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="customDateFrom" style="display: none;">
+                        <label class="form-label">من تاريخ</label>
+                        <input type="date" id="dateFrom" name="dateFrom" class="form-input">
+                    </div>
+                    
+                    <div class="form-group" id="customDateTo" style="display: none;">
+                        <label class="form-label">إلى تاريخ</label>
+                        <input type="date" id="dateTo" name="dateTo" class="form-input">
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" onclick="closeCustomReportModal()" class="btn btn-secondary ml-3">
+                        إلغاء
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        إنشاء التقرير
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">جاري إنشاء التقرير...</p>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/reports.js"></script>
+</body>
+</html>

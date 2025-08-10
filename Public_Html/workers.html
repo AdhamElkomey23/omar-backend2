@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>العمال - الواصلون للتعدين والصناعات الكيماوية</title>
+    <meta name="description" content="إدارة شئون العاملين - تسجيل وإدارة بيانات جميع العمال والموظفين">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-cairo">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-industry text-white text-sm"></i>
+                        </div>
+                        <span class="mr-3 text-lg font-semibold text-gray-900">الواصلون</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-reverse space-x-4">
+                    <div class="text-sm text-gray-500" id="currentDate"></div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-amber-600 text-sm"></i>
+                        </div>
+                        <span class="mr-2 text-sm font-medium text-gray-700">المدير</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex h-screen bg-gray-50">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-sm">
+            <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">القائمة الرئيسية</h2>
+                <nav class="space-y-2">
+                    <a href="index.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-tachometer-alt ml-3"></i>
+                        لوحة التحكم
+                    </a>
+                    <a href="sales.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-chart-line ml-3"></i>
+                        المبيعات
+                    </a>
+                    <a href="storage.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-warehouse ml-3"></i>
+                        إدارة المخزون
+                    </a>
+                    <a href="workers.html" class="flex items-center px-4 py-2 text-amber-600 bg-amber-50 rounded-lg">
+                        <i class="fas fa-users ml-3"></i>
+                        العمال
+                    </a>
+                    <a href="expenses.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-receipt ml-3"></i>
+                        المصروفات
+                    </a>
+                    <a href="reports.html" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <i class="fas fa-chart-bar ml-3"></i>
+                        التقارير
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <div class="p-6">
+                <!-- Header -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900 mb-2">إدارة العمال</h1>
+                            <p class="text-gray-600">إدارة بيانات العاملين والموظفين في الشركة</p>
+                        </div>
+                        <button onclick="openAddWorkerModal()" class="btn btn-primary">
+                            <i class="fas fa-plus ml-2"></i>
+                            إضافة عامل جديد
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i class="fas fa-users text-blue-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">إجمالي العمال</p>
+                                <p class="text-2xl font-bold text-gray-900" id="totalWorkers">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="fas fa-user-check text-green-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">العمال النشطون</p>
+                                <p class="text-2xl font-bold text-gray-900" id="activeWorkers">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <i class="fas fa-dollar-sign text-yellow-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">إجمالي الرواتب</p>
+                                <p class="text-2xl font-bold text-gray-900" id="totalSalaries">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i class="fas fa-building text-purple-600"></i>
+                            </div>
+                            <div class="mr-4">
+                                <p class="text-sm font-medium text-gray-600">الأقسام</p>
+                                <p class="text-2xl font-bold text-gray-900" id="departmentCount">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="form-label">القسم</label>
+                            <select id="departmentFilter" class="form-select">
+                                <option value="">جميع الأقسام</option>
+                                <option value="Production">الإنتاج</option>
+                                <option value="QualityControl">مراقبة الجودة</option>
+                                <option value="Storage">المخازن</option>
+                                <option value="Maintenance">الصيانة</option>
+                                <option value="Administrative">الإدارة</option>
+                                <option value="Sales">المبيعات</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">الحالة</label>
+                            <select id="statusFilter" class="form-select">
+                                <option value="">جميع الحالات</option>
+                                <option value="active">نشط</option>
+                                <option value="inactive">غير نشط</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">البحث</label>
+                            <input type="text" id="searchInput" class="form-input" placeholder="البحث بالاسم أو المنصب">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workers Table -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">قائمة العمال</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>الاسم</th>
+                                    <th>المنصب</th>
+                                    <th>القسم</th>
+                                    <th>الراتب</th>
+                                    <th>رقم الهاتف</th>
+                                    <th>تاريخ التعيين</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="workersTableBody">
+                                <tr>
+                                    <td colspan="9" class="text-center py-8">
+                                        <div class="text-gray-500">
+                                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                            <p>جاري تحميل البيانات...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Worker Modal -->
+    <div id="workerModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-2xl">
+            <div class="modal-header">
+                <h3 id="workerModalTitle" class="text-lg font-medium text-gray-900">إضافة عامل جديد</h3>
+                <button onclick="closeWorkerModal()" class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="workerForm" class="modal-body">
+                <input type="hidden" id="workerId" name="id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">الاسم الكامل *</label>
+                        <input type="text" id="workerName" name="name" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">المنصب *</label>
+                        <input type="text" id="position" name="position" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">القسم *</label>
+                        <select id="department" name="department" class="form-select" required>
+                            <option value="">اختر القسم</option>
+                            <option value="Production">الإنتاج</option>
+                            <option value="QualityControl">مراقبة الجودة</option>
+                            <option value="Storage">المخازن</option>
+                            <option value="Maintenance">الصيانة</option>
+                            <option value="Administrative">الإدارة</option>
+                            <option value="Sales">المبيعات</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">الراتب الشهري *</label>
+                        <input type="number" id="salary" name="salary" class="form-input" required min="0" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="phone" name="phone" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        <input type="email" id="email" name="email" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">تاريخ التعيين *</label>
+                        <input type="date" id="hireDate" name="hireDate" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">الحالة</label>
+                        <select id="isActive" name="isActive" class="form-select">
+                            <option value="true">نشط</option>
+                            <option value="false">غير نشط</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">العنوان</label>
+                    <textarea id="address" name="address" class="form-textarea" rows="2" placeholder="عنوان السكن..."></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" onclick="closeWorkerModal()" class="btn btn-secondary ml-3">
+                        إلغاء
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        حفظ العامل
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">جاري التحميل...</p>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/workers.js"></script>
+</body>
+</html>

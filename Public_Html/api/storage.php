@@ -1,175 +1,199 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit(0);
-}
-
-require_once '../config/database.php';
-
-// Try to get database connection, fall back to mock data if fails
-$db = DatabaseConfig::getConnection();
+require_once 'config.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
-    switch($method) {
+    switch ($method) {
         case 'GET':
-            if ($db === null) {
-                // Use mock data when database is not available
-                $items = DatabaseConfig::getMockData('storage');
-                echo json_encode($items);
-                exit();
-            }
-            
-            // Get all storage items
-            $query = "SELECT * FROM storage_items ORDER BY created_at DESC";
-            $stmt = $db->prepare($query);
-            $stmt->execute();
-            $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            // Convert to camelCase for frontend
-            $formattedItems = array_map(function($item) {
-                return [
-                    'id' => (int)$item['id'],
-                    'itemName' => $item['item_name'],
-                    'quantityInTons' => (float)$item['quantity_in_tons'],
-                    'purchasePricePerTon' => (float)$item['purchase_price_per_ton'],
-                    'dealerName' => $item['dealer_name'],
-                    'dealerContact' => $item['dealer_contact'] ?? '',
-                    'purchaseDate' => $item['purchase_date'],
-                    'createdAt' => $item['created_at']
-                ];
-            }, $items);
-            
-            echo json_encode($formattedItems);
+            handleGet();
             break;
-            
         case 'POST':
-            // Add new storage item
-            $input = json_decode(file_get_contents('php://input'), true);
-            
-            if (!$input || !isset($input['itemName']) || !isset($input['quantityInTons']) || !isset($input['purchasePricePerTon']) || !isset($input['dealerName'])) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Missing required fields']);
-                exit();
-            }
-            
-            $query = "INSERT INTO storage_items (item_name, quantity_in_tons, purchase_price_per_ton, dealer_name, dealer_contact, purchase_date) 
-                     VALUES (:item_name, :quantity_in_tons, :purchase_price_per_ton, :dealer_name, :dealer_contact, :purchase_date)";
-            
-            $stmt = $db->prepare($query);
-            $result = $stmt->execute([
-                ':item_name' => $input['itemName'],
-                ':quantity_in_tons' => $input['quantityInTons'],
-                ':purchase_price_per_ton' => $input['purchasePricePerTon'],
-                ':dealer_name' => $input['dealerName'],
-                ':dealer_contact' => $input['dealerContact'] ?? '',
-                ':purchase_date' => $input['purchaseDate'] ?? date('Y-m-d')
-            ]);
-            
-            if ($result) {
-                $newId = $db->lastInsertId();
-                echo json_encode(['id' => $newId, 'message' => 'Storage item added successfully']);
-            } else {
-                throw new Exception('Failed to add storage item');
-            }
+            handlePost();
             break;
-            
         case 'PUT':
-            // Update storage item
-            $input = json_decode(file_get_contents('php://input'), true);
-            
-            if (!$input || !isset($input['id'])) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Missing item ID']);
-                exit();
-            }
-            
-            $query = "UPDATE storage_items SET 
-                     item_name = :item_name, quantity_in_tons = :quantity_in_tons, 
-                     purchase_price_per_ton = :purchase_price_per_ton, dealer_name = :dealer_name, 
-                     dealer_contact = :dealer_contact, purchase_date = :purchase_date
-                     WHERE id = :id";
-            
-            $stmt = $db->prepare($query);
-            $result = $stmt->execute([
-                ':id' => $input['id'],
-                ':item_name' => $input['itemName'],
-                ':quantity_in_tons' => $input['quantityInTons'],
-                ':purchase_price_per_ton' => $input['purchasePricePerTon'],
-                ':dealer_name' => $input['dealerName'],
-                ':dealer_contact' => $input['dealerContact'] ?? '',
-                ':purchase_date' => $input['purchaseDate']
-            ]);
-            
-            if ($result) {
-                echo json_encode(['message' => 'Storage item updated successfully']);
-            } else {
-                throw new Exception('Failed to update storage item');
-            }
+            handlePut();
             break;
-            
         case 'DELETE':
-            // Delete storage item
-            $rawInput = file_get_contents('php://input');
-            
-            if (empty($rawInput)) {
-                http_response_code(400);
-                echo json_encode(['error' => 'No input data received']);
-                exit();
-            }
-            
-            $input = json_decode($rawInput, true);
-            
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Invalid JSON data']);
-                exit();
-            }
-            
-            if (!$input || !isset($input['id'])) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Missing item ID']);
-                exit();
-            }
-            
-            $itemId = $input['id'];
-            
-            // Check if record exists
-            $checkStmt = $db->prepare("SELECT id FROM storage_items WHERE id = ?");
-            $checkStmt->execute([$itemId]);
-            
-            if ($checkStmt->rowCount() == 0) {
-                http_response_code(404);
-                echo json_encode(['error' => 'Storage item not found']);
-                exit();
-            }
-            
-            // Perform delete
-            $stmt = $db->prepare("DELETE FROM storage_items WHERE id = ?");
-            $result = $stmt->execute([$itemId]);
-            
-            if ($result && $stmt->rowCount() > 0) {
-                echo json_encode(['success' => true, 'message' => 'Storage item deleted successfully']);
-            } else {
-                throw new Exception('Failed to delete storage item - no rows affected');
-            }
+            handleDelete();
             break;
-            
         default:
-            http_response_code(405);
-            echo json_encode(['error' => 'Method not allowed']);
-            break;
+            jsonResponse(['error' => 'Method not allowed'], 405);
+    }
+} catch (Exception $e) {
+    error_log("Storage API error: " . $e->getMessage());
+    jsonResponse(['error' => 'Internal server error'], 500);
+}
+
+function handleGet() {
+    $db = Database::getInstance();
+    
+    if (isset($_GET['id'])) {
+        // Get single storage item
+        $id = (int)$_GET['id'];
+        $item = $db->fetch("SELECT * FROM storage_items WHERE id = ?", [$id]);
+        
+        if (!$item) {
+            jsonResponse(['error' => 'Storage item not found'], 404);
+        }
+        
+        jsonResponse($item);
+    } else {
+        // Get all storage items
+        $items = $db->fetchAll("SELECT * FROM storage_items ORDER BY created_at DESC");
+        jsonResponse($items);
+    }
+}
+
+function handlePost() {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$input) {
+        jsonResponse(['error' => 'Invalid JSON data'], 400);
     }
     
-} catch(Exception $e) {
-    error_log("Storage API Error: " . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['error' => 'Server error occurred']);
+    // Validate required fields
+    $required = ['itemName', 'quantityInTons', 'purchasePricePerTon', 'dealerName', 'purchaseDate'];
+    $missing = validateRequired($input, $required);
+    
+    if (!empty($missing)) {
+        jsonResponse(['error' => 'Missing required fields: ' . implode(', ', $missing)], 400);
+    }
+    
+    // Sanitize input
+    $data = sanitizeInput($input);
+    
+    // Validate numeric fields
+    if (!is_numeric($data['quantityInTons']) || $data['quantityInTons'] < 0) {
+        jsonResponse(['error' => 'Invalid quantity'], 400);
+    }
+    
+    if (!is_numeric($data['purchasePricePerTon']) || $data['purchasePricePerTon'] < 0) {
+        jsonResponse(['error' => 'Invalid price'], 400);
+    }
+    
+    $db = Database::getInstance();
+    
+    // Insert storage item
+    $query = "
+        INSERT INTO storage_items (
+            item_name, quantity_in_tons, purchase_price_per_ton,
+            dealer_name, dealer_contact, purchase_date, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, NOW())
+    ";
+    
+    $params = [
+        $data['itemName'],
+        $data['quantityInTons'],
+        $data['purchasePricePerTon'],
+        $data['dealerName'],
+        $data['dealerContact'] ?? null,
+        $data['purchaseDate']
+    ];
+    
+    $db->query($query, $params);
+    $itemId = $db->lastInsertId();
+    
+    // Get the created item
+    $item = $db->fetch("SELECT * FROM storage_items WHERE id = ?", [$itemId]);
+    
+    jsonResponse($item, 201);
+}
+
+function handlePut() {
+    if (!isset($_GET['id'])) {
+        jsonResponse(['error' => 'Storage item ID is required'], 400);
+    }
+    
+    $id = (int)$_GET['id'];
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$input) {
+        jsonResponse(['error' => 'Invalid JSON data'], 400);
+    }
+    
+    $db = Database::getInstance();
+    
+    // Check if item exists
+    $existingItem = $db->fetch("SELECT * FROM storage_items WHERE id = ?", [$id]);
+    if (!$existingItem) {
+        jsonResponse(['error' => 'Storage item not found'], 404);
+    }
+    
+    // Sanitize input
+    $data = sanitizeInput($input);
+    
+    // Build update query dynamically
+    $updateFields = [];
+    $params = [];
+    
+    if (isset($data['itemName'])) {
+        $updateFields[] = 'item_name = ?';
+        $params[] = $data['itemName'];
+    }
+    
+    if (isset($data['quantityInTons'])) {
+        if (!is_numeric($data['quantityInTons']) || $data['quantityInTons'] < 0) {
+            jsonResponse(['error' => 'Invalid quantity'], 400);
+        }
+        $updateFields[] = 'quantity_in_tons = ?';
+        $params[] = $data['quantityInTons'];
+    }
+    
+    if (isset($data['purchasePricePerTon'])) {
+        if (!is_numeric($data['purchasePricePerTon']) || $data['purchasePricePerTon'] < 0) {
+            jsonResponse(['error' => 'Invalid price'], 400);
+        }
+        $updateFields[] = 'purchase_price_per_ton = ?';
+        $params[] = $data['purchasePricePerTon'];
+    }
+    
+    if (isset($data['dealerName'])) {
+        $updateFields[] = 'dealer_name = ?';
+        $params[] = $data['dealerName'];
+    }
+    
+    if (isset($data['dealerContact'])) {
+        $updateFields[] = 'dealer_contact = ?';
+        $params[] = $data['dealerContact'];
+    }
+    
+    if (isset($data['purchaseDate'])) {
+        $updateFields[] = 'purchase_date = ?';
+        $params[] = $data['purchaseDate'];
+    }
+    
+    if (empty($updateFields)) {
+        jsonResponse(['error' => 'No fields to update'], 400);
+    }
+    
+    $params[] = $id;
+    $query = "UPDATE storage_items SET " . implode(', ', $updateFields) . " WHERE id = ?";
+    
+    $db->query($query, $params);
+    
+    // Return updated item
+    $item = $db->fetch("SELECT * FROM storage_items WHERE id = ?", [$id]);
+    jsonResponse($item);
+}
+
+function handleDelete() {
+    if (!isset($_GET['id'])) {
+        jsonResponse(['error' => 'Storage item ID is required'], 400);
+    }
+    
+    $id = (int)$_GET['id'];
+    $db = Database::getInstance();
+    
+    // Check if item exists
+    $item = $db->fetch("SELECT * FROM storage_items WHERE id = ?", [$id]);
+    if (!$item) {
+        jsonResponse(['error' => 'Storage item not found'], 404);
+    }
+    
+    // Delete item
+    $db->query("DELETE FROM storage_items WHERE id = ?", [$id]);
+    
+    jsonResponse(['message' => 'Storage item deleted successfully']);
 }
 ?>
