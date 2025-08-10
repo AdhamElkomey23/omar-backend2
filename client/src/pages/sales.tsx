@@ -61,23 +61,24 @@ export default function Sales() {
     }
   });
 
-  // Group storage items by material and calculate total available quantities
-  const availableProducts = storageItems.reduce((acc, item) => {
-    const existing = acc.find(p => p.itemName === item.itemName);
-    if (existing) {
-      existing.totalQuantity += item.quantityInTons;
-      existing.avgPrice = (existing.avgPrice + item.purchasePricePerTon) / 2;
-    } else {
-      acc.push({
-        itemName: item.itemName,
-        totalQuantity: item.quantityInTons,
-        avgPrice: item.purchasePricePerTon,
-        storageItems: [item]
-      });
-    }
-    return acc;
-  }, [] as Array<{itemName: string, totalQuantity: number, avgPrice: number, storageItems: StorageItem[]}>)
-  .filter(item => item.totalQuantity > 0);
+  // Group storage items by material and calculate total available quantities, only include items with quantity > 0
+  const availableProducts = storageItems
+    .filter(item => item.quantityInTons > 0) // Only include items with available quantity
+    .reduce((acc, item) => {
+      const existing = acc.find(p => p.itemName === item.itemName);
+      if (existing) {
+        existing.totalQuantity += item.quantityInTons;
+        existing.avgPrice = (existing.avgPrice + item.purchasePricePerTon) / 2;
+      } else {
+        acc.push({
+          itemName: item.itemName,
+          totalQuantity: item.quantityInTons,
+          avgPrice: item.purchasePricePerTon,
+          storageItems: [item]
+        });
+      }
+      return acc;
+    }, [] as Array<{itemName: string, totalQuantity: number, avgPrice: number, storageItems: StorageItem[]}>);
 
   const addSaleMutation = useMutation({
     mutationFn: async (values: SaleFormValues) => {
